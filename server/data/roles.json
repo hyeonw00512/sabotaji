@@ -1,0 +1,12 @@
+{
+  "roles": {
+    "MINER": { "name": "탐사대", "team": "MINERS", "description": "진짜 광맥까지 길을 연결하세요." },
+    "SABOTEUR": { "name": "교란자", "team": "SABOTEURS", "description": "정체를 숨기며 탐사를 지연시키세요." }
+  },
+  "distribution": {
+    "3": { "dealCount": 3, "pool": { "MINER": 3, "SABOTEUR": 1 } }, "4": { "dealCount": 4, "pool": { "MINER": 4, "SABOTEUR": 1 } },
+    "5": { "dealCount": 5, "pool": { "MINER": 4, "SABOTEUR": 2 } }, "6": { "dealCount": 6, "pool": { "MINER": 5, "SABOTEUR": 2 } },
+    "7": { "dealCount": 7, "pool": { "MINER": 5, "SABOTEUR": 3 } }, "8": { "dealCount": 8, "pool": { "MINER": 6, "SABOTEUR": 3 } },
+    "9": { "dealCount": 9, "pool": { "MINER": 7, "SABOTEUR": 3 } }, "10": { "dealCount": 10, "pool": { "MINER": 7, "SABOTEUR": 4 } }
+  }
+}

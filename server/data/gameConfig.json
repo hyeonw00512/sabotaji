@@ -1,0 +1,19 @@
+{
+  "minPlayers": 3,
+  "maxPlayers": 10,
+  "maxSpectators": 20,
+  "board": {
+    "allowExpansion": true,
+    "initialBounds": { "minX": 0, "maxX": 8, "minY": -2, "maxY": 2 },
+    "start": { "x": 0, "y": 0 },
+    "goals": [{ "x": 8, "y": -2 }, { "x": 8, "y": 0 }, { "x": 8, "y": 2 }]
+  },
+  "handSizes": [{ "min": 3, "max": 5, "size": 6 }, { "min": 6, "max": 7, "size": 5 }, { "min": 8, "max": 10, "size": 4 }],
+  "roomDefaults": { "maxPlayers": 8, "rounds": 3, "turnSeconds": 0, "isPublic": false, "actionCards": true, "specialRules": false, "aiReplacement": true },
+  "reconnectGraceMs": 300000,
+  "disconnectTurnGraceMs": 30000,
+  "rewardChoiceSeconds": 30,
+  "startingPlayerPolicy": "RANDOM_EACH_ROUND",
+  "roomStateRetentionMs": 3600000,
+  "chatMaxLength": 300
+}

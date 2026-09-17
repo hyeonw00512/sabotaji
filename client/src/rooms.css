@@ -1,0 +1,20 @@
+.toggle-field { grid-template-columns: auto 1fr; align-items: center; padding-top: 5px; }
+.toggle-field input { width: 18px; height: 18px; accent-color: var(--gold); }
+.entry-card label small { color: var(--muted); font-weight: 500; }
+.public-rooms { border-top: 1px solid var(--line); margin-top: 22px; padding-top: 16px; }
+.room-list-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+.room-list-head h2 { font-size: .92rem; }
+.room-list-head button { color: var(--gold); background: transparent; border: 0; font-weight: 800; }
+.room-list { display: grid; gap: 7px; max-height: 210px; overflow-y: auto; }
+.room-list > button { display: grid; grid-template-columns: 22px 1fr auto; gap: 3px 8px; text-align: left; background: #111a14; color: var(--ink); border: 1px solid var(--line); border-radius: 9px; padding: 10px; }
+.room-list > button:hover { border-color: var(--gold); }
+.room-list > button > span { grid-row: span 2; color: var(--gold); }
+.room-list em { font-size: .78rem; color: var(--gold2); font-style: normal; }
+.room-list small { grid-column: 2 / 4; color: var(--muted); font-size: .7rem; }
+.room-row { display: grid; grid-template-columns: 22px 1fr auto; gap: 4px 8px; align-items: center; background: #111a14; border: 1px solid var(--line); border-radius: 9px; padding: 10px; }
+.room-row > span { grid-row: span 2; color: var(--gold); }
+.room-row b { display: block; font-size: .85rem; }
+.room-row small { color: var(--muted); font-size: .68rem; }
+.room-row em { color: var(--gold2); font-size: .75rem; font-style: normal; }
+.room-row-actions { grid-column: 2 / 4; display: flex; gap: 6px; }
+.room-row-actions button { background: #26372b; border: 1px solid #49634f; color: var(--ink); border-radius: 6px; padding: 5px 8px; font-size: .72rem; }

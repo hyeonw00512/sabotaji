@@ -1,0 +1,10 @@
+@keyframes card-enter { from { opacity: 0; transform: scale(.72) rotate(-5deg); } to { opacity: 1; transform: scale(1) rotate(0); } }
+@keyframes goal-reveal { 0% { filter: brightness(2.5); transform: scale(.72); } 70% { transform: scale(1.14); } 100% { filter: brightness(1); transform: scale(1); } }
+@keyframes turn-pulse { 50% { box-shadow: 0 0 0 4px #91d99822; } }
+@keyframes toast-in { from { opacity: 0; transform: translate(-50%, -16px); } to { opacity: 1; transform: translate(-50%, 0); } }
+.board-cell.occupied { animation: card-enter .22s ease-out both; }
+.board-cell.goal-revealed { animation: goal-reveal .55s ease-out both; }
+.player-mini.turn { animation: turn-pulse 1.1s ease-in-out infinite; }
+.equipment i.broken { animation: card-enter .18s ease-out both; }
+.toast { animation: toast-in .2s ease-out; }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; } }

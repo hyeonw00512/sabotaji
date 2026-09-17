@@ -1,0 +1,16 @@
+{
+  "cards": [
+    { "key": "straight_horizontal", "name": "직선 갱도", "connections": ["LEFT", "RIGHT"], "routes": [["LEFT", "RIGHT"]], "rotatable": true, "count": 4 },
+    { "key": "straight_vertical", "name": "세로 갱도", "connections": ["TOP", "BOTTOM"], "routes": [["TOP", "BOTTOM"]], "rotatable": true, "count": 4 },
+    { "key": "corner_north_east", "name": "굽은 갱도", "connections": ["TOP", "RIGHT"], "routes": [["TOP", "RIGHT"]], "rotatable": true, "count": 5 },
+    { "key": "corner_south_west", "name": "굽은 갱도", "connections": ["BOTTOM", "LEFT"], "routes": [["BOTTOM", "LEFT"]], "rotatable": true, "count": 3 },
+    { "key": "tee_north", "name": "삼거리", "connections": ["LEFT", "TOP", "RIGHT"], "routes": [["LEFT", "TOP", "RIGHT"]], "rotatable": true, "count": 5 },
+    { "key": "tee_south", "name": "삼거리", "connections": ["LEFT", "BOTTOM", "RIGHT"], "routes": [["LEFT", "BOTTOM", "RIGHT"]], "rotatable": true, "count": 3 },
+    { "key": "branch_right", "name": "분기 갱도", "connections": ["TOP", "RIGHT", "BOTTOM"], "routes": [["TOP", "RIGHT", "BOTTOM"]], "rotatable": true, "count": 4 },
+    { "key": "branch_left", "name": "분기 갱도", "connections": ["TOP", "BOTTOM", "LEFT"], "routes": [["TOP", "BOTTOM", "LEFT"]], "rotatable": true, "count": 4 },
+    { "key": "split_cross", "name": "분리 교차 갱도", "connections": ["TOP", "RIGHT", "BOTTOM", "LEFT"], "routes": [["TOP", "BOTTOM"], ["LEFT", "RIGHT"]], "rotatable": false, "count": 2 },
+    { "key": "split_corners", "name": "분리 굽은 갱도", "connections": ["TOP", "RIGHT", "BOTTOM", "LEFT"], "routes": [["TOP", "LEFT"], ["RIGHT", "BOTTOM"]], "rotatable": false, "count": 2 },
+    { "key": "dead_end_left", "name": "막힌 갱도", "connections": ["LEFT"], "routes": [["LEFT"]], "rotatable": true, "count": 2 },
+    { "key": "dead_end_top", "name": "막힌 갱도", "connections": ["TOP"], "routes": [["TOP"]], "rotatable": true, "count": 2 }
+  ]
+}
