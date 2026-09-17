@@ -1,0 +1,12 @@
+services:
+  sabotaji:
+    build: .
+    ports:
+      - "3001:3001"
+    environment:
+      PORT: 3001
+      GAME_HISTORY_PATH: /app/storage/game-history.json
+      ROOM_STATE_PATH: /app/storage/room-state.json
+    volumes:
+      - ./storage:/app/storage
+    restart: unless-stopped

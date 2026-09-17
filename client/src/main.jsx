@@ -1,0 +1,13 @@
+import React from 'react';
+import { createRoot } from 'react-dom/client';
+import { App } from './App.jsx';
+import './styles.css';
+import './result.css';
+import './motion.css';
+import './rooms.css';
+import './spectator.css';
+import './records.css';
+import './board-dynamic.css';
+import './mine-cards.css';
+import './action-cards.css';
+createRoot(document.getElementById('root')).render(<React.StrictMode><App/></React.StrictMode>);

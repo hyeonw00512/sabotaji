@@ -1,0 +1,15 @@
+{
+  "cards": [
+    { "key": "break_pick", "type": "ACTION", "action": "BREAK", "equipment": "PICK", "name": "곡괭이 고장", "description": "한 명의 곡괭이를 고장냅니다.", "count": 3 },
+    { "key": "break_cart", "type": "ACTION", "action": "BREAK", "equipment": "CART", "name": "수레 고장", "description": "한 명의 수레를 고장냅니다.", "count": 3 },
+    { "key": "break_lamp", "type": "ACTION", "action": "BREAK", "equipment": "LAMP", "name": "등불 고장", "description": "한 명의 등불을 고장냅니다.", "count": 3 },
+    { "key": "repair_pick", "type": "ACTION", "action": "REPAIR", "equipment": "PICK", "name": "곡괭이 수리", "description": "곡괭이 하나를 수리합니다.", "count": 2 },
+    { "key": "repair_cart", "type": "ACTION", "action": "REPAIR", "equipment": "CART", "name": "수레 수리", "description": "수레 하나를 수리합니다.", "count": 2 },
+    { "key": "repair_lamp", "type": "ACTION", "action": "REPAIR", "equipment": "LAMP", "name": "등불 수리", "description": "등불 하나를 수리합니다.", "count": 2 },
+    { "key": "repair_pick_cart", "type": "ACTION", "action": "REPAIR", "equipmentOptions": ["PICK", "CART"], "name": "장비 수리", "description": "곡괭이 또는 수레 하나를 수리합니다.", "count": 1 },
+    { "key": "repair_cart_lamp", "type": "ACTION", "action": "REPAIR", "equipmentOptions": ["CART", "LAMP"], "name": "장비 수리", "description": "수레 또는 등불 하나를 수리합니다.", "count": 1 },
+    { "key": "repair_lamp_pick", "type": "ACTION", "action": "REPAIR", "equipmentOptions": ["LAMP", "PICK"], "name": "장비 수리", "description": "등불 또는 곡괭이 하나를 수리합니다.", "count": 1 },
+    { "key": "remove_path", "type": "ACTION", "action": "REMOVE_PATH", "name": "터널 철거", "description": "배치된 터널 카드 한 장을 제거합니다.", "count": 3 },
+    { "key": "peek_goal", "type": "ACTION", "action": "PEEK_GOAL", "name": "탐사 지도", "description": "숨겨진 목표 하나를 혼자 확인합니다.", "count": 6 }
+  ]
+}

@@ -1,0 +1,11 @@
+.spectator-note {
+  margin: 14px 0 0;
+  color: var(--gold2);
+  font-size: .78rem;
+  line-height: 1.45;
+}
+
+.players .spectator-note {
+  border-top: 1px solid var(--line);
+  padding-top: 12px;
+}
