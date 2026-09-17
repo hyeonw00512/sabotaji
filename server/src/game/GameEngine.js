@@ -39,7 +39,7 @@ export class GameEngine {
     const goals = shuffle(['TREASURE', 'ROCK', 'ROCK']);
     const turnIndex = config.startingPlayerPolicy === 'RANDOM_EACH_ROUND' ? randomStartingTurnIndex(active) : 0;
     const startingPlayer = active[turnIndex];
-    this.room.game = { phase: 'PLAYING', round, turnIndex, startingPlayerId: startingPlayer.id, deck, discardPile: [], board: this.boardEngine.initialBoard(), goals, unusedRoles: shuffledRoles.slice(roleSetup.dealCount), winner: null, result: null, turnStartedAt: Date.now() };
+    this.room.game = { phase: 'PLAYING', round, roleRevealId: id(8), turnIndex, startingPlayerId: startingPlayer.id, deck, discardPile: [], board: this.boardEngine.initialBoard(), goals, unusedRoles: shuffledRoles.slice(roleSetup.dealCount), winner: null, result: null, turnStartedAt: Date.now() };
     this.room.status = 'PLAYING';
     this.log(round === 1 ? `게임을 시작했습니다. ${startingPlayer.nickname} 님이 무작위로 첫 차례가 되었습니다. 비밀 역할을 확인하세요.` : `${round}라운드를 시작했습니다. ${startingPlayer.nickname} 님이 무작위로 첫 차례가 되었습니다. 역할을 다시 확인하세요.`);
   }

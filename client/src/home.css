@@ -1,0 +1,67 @@
+/* First-visit mine entrance. All artwork below is original SVG/CSS. */
+.home-shell {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 17% 32%, rgba(239, 189, 87, .16), transparent 18rem),
+    radial-gradient(circle at 79% 18%, rgba(99, 183, 132, .1), transparent 22rem);
+}
+.home-shell::before,
+.home-shell::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  pointer-events: none;
+}
+.home-shell::before { inset: auto -10vw -18vw auto; width: 54vw; height: 54vw; border: 1px solid #70572a40; border-radius: 50%; box-shadow: 0 0 0 38px #70572a0a, 0 0 0 78px #70572a08; }
+.home-shell::after { left: 0; bottom: 0; width: 100%; height: 35%; opacity: .45; background: repeating-linear-gradient(118deg, transparent 0 48px, #a17a3b0b 49px 51px, transparent 52px 102px); }
+.home-brand { position: relative; padding: 32px 12px 32px 5vw; }
+.home-emblem { width: min(220px, 40vw); margin: 0 0 12px -12px; filter: drop-shadow(0 16px 24px #0009); }
+.home-emblem svg { display: block; width: 100%; height: auto; }
+.home-emblem-rock { fill: #332a1e; stroke: #80653a; stroke-width: 3; }
+.home-emblem-tunnel { fill: #10150f; stroke: #be9151; stroke-width: 6; }
+.home-emblem-rail { fill: none; stroke: #d5b06a; stroke-width: 5; stroke-linecap: round; }
+.home-emblem-lamp { fill: #ffd979; stroke: #fff0bb; stroke-width: 4; filter: drop-shadow(0 0 10px #ffd25d); }
+.home-kicker { color: var(--gold2) !important; letter-spacing: .18em !important; }
+.home-brand h1 { letter-spacing: .055em; text-shadow: 0 5px 0 #15140b, 0 16px 38px #000; margin: 8px 0 0; }
+.home-subtitle { color: #c5d0b9; font-family: Georgia, "Noto Serif KR", serif; font-size: clamp(1.4rem, 2.4vw, 2rem); margin: 6px 0 20px; letter-spacing: .22em; }
+.home-features { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 25px; }
+.home-features span { padding: 8px 11px; border: 1px solid #806b3d; border-radius: 999px; background: #171a12b8; color: #dfce9f; font-size: .77rem; font-weight: 800; }
+.home-entry { position: relative; border-color: #665b3b; box-shadow: 0 28px 90px #000b, inset 0 1px #fff1; }
+.home-entry::before { content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; background: linear-gradient(130deg, #efbd5712, transparent 38%); }
+.entry-heading { margin-bottom: 22px; }
+.entry-heading > span { color: var(--gold); font-size: .73rem; font-weight: 900; letter-spacing: .13em; text-transform: uppercase; }
+.entry-heading h2 { margin: 5px 0 6px; font-family: Georgia, "Noto Serif KR", serif; font-size: 1.65rem; }
+.entry-heading p, .invite-note { color: var(--muted); font-size: .84rem; line-height: 1.55; }
+.home-create span { font-size: 1.1rem; margin-right: 5px; }
+.home-join { min-height: 48px; }
+.invite-banner { display: flex; align-items: center; gap: 12px; margin: -4px 0 22px; padding: 13px; border: 1px solid #8d733e; border-radius: 13px; background: linear-gradient(135deg, #60451e8c, #202719); }
+.invite-banner-icon { display: grid; place-items: center; flex: 0 0 34px; width: 34px; height: 34px; border-radius: 50%; background: #efbd57; color: #281c09; font-size: 1.1rem; }
+.invite-banner b { color: #ffe1a0; font-size: .82rem; }
+.invite-banner p { margin: 3px 0 0; color: #c8d4c5; font-size: .85rem; }
+.invite-banner strong { margin-right: 5px; color: var(--gold2); letter-spacing: .14em; }
+.invite-note { margin: 12px 2px 0; }
+.lobby-invite { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 9px; align-items: center; margin: -2px 0 18px; padding: 10px; border: 1px solid #4c5b46; border-radius: 10px; background: #0c130e; }
+.lobby-invite > span { color: var(--gold); font-size: .72rem; font-weight: 900; }
+.lobby-invite code { overflow: hidden; color: #aebcad; font-size: .7rem; text-overflow: ellipsis; white-space: nowrap; }
+.lobby-invite button { border: 1px solid #5e704f; border-radius: 7px; padding: 6px 9px; background: #273328; color: var(--ink); font-size: .73rem; font-weight: 800; }
+@media (max-width: 850px) {
+  .home-shell { display: block; min-height: 100svh; padding: 20px 16px 34px; overflow: auto; }
+  .home-brand { padding: 8px 4px 24px; text-align: center; }
+  .home-emblem { width: 128px; margin: 0 auto 7px; }
+  .home-brand h1 { font-size: clamp(2.8rem, 15vw, 4.2rem); }
+  .home-subtitle { font-size: 1.12rem; margin-bottom: 13px; }
+  .home-brand .lead { max-width: 360px; margin: 0 auto; font-size: .94rem; }
+  .home-features { justify-content: center; margin-top: 17px; }
+  .home-features span { padding: 6px 8px; font-size: .69rem; }
+  .home-entry { max-width: 520px; margin: 0 auto; padding: 21px 17px; }
+  .lobby-invite { grid-template-columns: 1fr auto; }
+  .lobby-invite > span { grid-column: 1 / -1; }
+}
+@media (max-width: 420px) {
+  .home-shell { padding-inline: 11px; }
+  .home-features { gap: 5px; }
+  .home-features span { font-size: .64rem; }
+  .topbar .small { font-size: .72rem; padding: 8px 9px; }
+}

@@ -1,14 +1,25 @@
+import { useState } from 'react';
 import { ChatPanel } from './ChatPanel.jsx';
 
 export function Lobby({ state, me, isSpectator, onReady, onStart, onSend }) {
   const invite = `${location.origin}/?room=${state.roomCode}`;
-  const copy = () => navigator.clipboard?.writeText(invite);
+  const [copied, setCopied] = useState(false);
+  const copy = async () => {
+    try {
+      await navigator.clipboard?.writeText(invite);
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 1800);
+    } catch {
+      window.prompt('초대 링크를 복사하세요.', invite);
+    }
+  };
   const meInRoom = state.players.find(player => player.id === me.playerId);
 
   return <main className="lobby-shell">
-    <header className="topbar"><div><span className="eyebrow">대기실</span><h1>방 코드 <strong>{state.roomCode}</strong></h1></div><button className="secondary small" onClick={copy}>초대 링크 복사</button></header>
+    <header className="topbar"><div><span className="eyebrow">대기실 · 광산 입구</span><h1>방 코드 <strong>{state.roomCode}</strong></h1></div><button className="secondary small" onClick={copy}>{copied ? '복사됨 ✓' : '초대 링크 복사'}</button></header>
     <section className="lobby-content">
       <div className="roster card">
+        <div className="lobby-invite"><span>초대 링크</span><code>{invite}</code><button onClick={copy}>{copied ? '복사됨' : '복사'}</button></div>
         <div className="section-title"><h2>탐사대원</h2><span>{state.players.length}/{state.settings.maxPlayers}</span></div>
         {state.players.map(player => <div className="player-row" key={player.id}><span className={`presence ${player.connected ? 'online' : ''}`}/><b>{player.nickname}</b>{player.id === state.hostId && <em>방장</em>}<span className="spacer"/><span>{player.connectionState === 'AI' ? 'AI 대행' : player.connectionState === 'RECONNECTING' ? '재접속 대기' : player.connectionState === 'LEFT' ? '이탈' : player.ready || player.id === state.hostId ? '준비' : '대기'}</span></div>)}
         <div className="rules"><span>{state.settings.rounds} 라운드</span><span>{state.settings.turnSeconds ? `${state.settings.turnSeconds}초 턴` : '시간 제한 없음'}</span></div>

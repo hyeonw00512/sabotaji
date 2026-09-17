@@ -10,12 +10,14 @@ export function Game({ state, me, isSpectator, soundOn, onSoundToggle, onPlay, o
   const [selected, setSelected] = useState(null);
   const [rotation, setRotation] = useState(0);
   const [mobilePanel, setMobilePanel] = useState(null);
+  const [dismissedRoleRevealId, setDismissedRoleRevealId] = useState(null);
   const isPlaying = state.game.phase === 'PLAYING';
   const isGoldDraft = state.game.phase === 'GOLD_DRAFT';
   const isTurn = isPlaying && !me.aiControlled && state.game.turnPlayerId === me.playerId;
   const turnName = state.players.find(player => player.id === state.game.turnPlayerId)?.nickname;
   const selectedCard = useMemo(() => me.hand.find(card => card.id === selected), [me.hand, selected]);
   const targetAction = selectedCard?.action === 'BREAK' || selectedCard?.action === 'REPAIR';
+  const showRoleReveal = isPlaying && !isSpectator && Boolean(me.role) && me.roleRevealId === state.game.roleRevealId && dismissedRoleRevealId !== state.game.roleRevealId;
   useEffect(() => { if (!me.hand.some(card => card.id === selected)) setSelected(null); }, [me.hand, selected]);
   const finish = promise => promise.then(ok => { if (ok) setSelected(null); });
   const choose = card => { setSelected(card.id === selected ? null : card.id); setRotation(0); };
@@ -36,9 +38,15 @@ export function Game({ state, me, isSpectator, soundOn, onSoundToggle, onPlay, o
     </section>
     <div className="mobile-dock"><button onClick={() => setMobilePanel(mobilePanel === 'players' ? null : 'players')}>대원</button><button onClick={() => setMobilePanel(mobilePanel === 'chat' ? null : 'chat')}>채팅·기록</button><span>{isSpectator ? '관전자' : me.role?.name}</span></div>
     {mobilePanel && <div className="mobile-sheet">{mobilePanel === 'chat' ? <ChatPanel state={state} onSend={onSend}/> : <div className="mobile-roster">{state.players.map(player => <PlayerMini key={player.id} player={player} current={player.id === state.game.turnPlayerId}/>)}</div>}<button className="sheet-close" onClick={() => setMobilePanel(null)}>닫기</button></div>}
+    {showRoleReveal && <RoleReveal role={me.role} round={state.game.round} onConfirm={() => setDismissedRoleRevealId(state.game.roleRevealId)}/>}
     {isGoldDraft && <GoldDraft mine={Boolean(me.goldDraft)} options={me.goldDraft?.options || []} onChoose={onChooseGold}/>} 
     {!isPlaying && !isGoldDraft && <RoundResult result={state.game.result} host={state.hostId === me.playerId} final={state.game.phase === 'GAME_END'} onNextRound={onNextRound} onRematch={onRematch}/>} 
   </main>;
+}
+
+function RoleReveal({ role, round, onConfirm }) {
+  const saboteur = role.team === 'SABOTEURS';
+  return <div className="role-reveal-overlay" role="dialog" aria-modal="true" aria-labelledby="role-reveal-title"><section className={`role-reveal-card ${saboteur ? 'saboteur' : 'miner'}`}><span className="eyebrow">라운드 {round} · 비밀 역할</span><div className="role-emblem" aria-hidden="true">{saboteur ? '⚠' : '⛏'}</div><h2 id="role-reveal-title">당신은 {role.name}</h2><p>{role.description}</p><small>이 정보는 본인에게만 표시됩니다.</small><button className="primary" onClick={onConfirm}>확인하고 시작</button></section></div>;
 }
 
 function GoldDraft({ mine, options, onChoose }) {

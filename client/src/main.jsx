@@ -10,4 +10,7 @@ import './records.css';
 import './board-dynamic.css';
 import './mine-cards.css';
 import './action-cards.css';
+import './role-reveal.css';
+import './responsive.css';
+import './home.css';
 createRoot(document.getElementById('root')).render(<React.StrictMode><App/></React.StrictMode>);
