@@ -65,7 +65,6 @@ export function Board({ state, selectedCard, rotation, onPlacePath, onRemovePath
   const drag = useRef(null);
   const pointers = useRef(new Map());
   const pinch = useRef(null);
-  const moved = useRef(false);
   const cells = useMemo(() => new Map(state.game.board.map(cell => [`${cell.x},${cell.y}`, cell])), [state.game.board]);
   const xs = useMemo(() => Array.from({ length:state.game.boardBounds.maxX - state.game.boardBounds.minX + 1 }, (_, index) => state.game.boardBounds.minX + index), [state.game.boardBounds]);
   const ys = useMemo(() => Array.from({ length:state.game.boardBounds.maxY - state.game.boardBounds.minY + 1 }, (_, index) => state.game.boardBounds.minY + index), [state.game.boardBounds]);
@@ -74,19 +73,18 @@ export function Board({ state, selectedCard, rotation, onPlacePath, onRemovePath
   const selectable = (cell, x, y) => (mode === 'PLACE' && canPreviewPlacement(cells, start, selectedCard, x, y, rotation)) || (mode === 'REMOVE_PATH' && cell?.kind === 'PATH') || (mode === 'PEEK_GOAL' && cell?.kind === 'GOAL' && !cell.revealed);
   const isPlacementPreview = (cell, x, y) => mode === 'PLACE' && canPreviewPlacement(cells, start, selectedCard, x, y, rotation);
   const placementCount = useMemo(() => mode === 'PLACE' ? ys.reduce((total, y) => total + xs.filter(x => isPlacementPreview(cells.get(cellKey(x, y)), x, y)).length, 0) : 0, [cells, mode, rotation, selectedCard, start, xs, ys]);
-  const click = (cell, x, y) => { if (moved.current) { moved.current = false; return; } if (isPlacementPreview(cell, x, y)) onPlacePath(x, y); if (mode === 'REMOVE_PATH' && cell?.kind === 'PATH') onRemovePath(x, y); if (mode === 'PEEK_GOAL' && cell?.kind === 'GOAL' && !cell.revealed) onPeekGoal(cell.goalIndex); };
+  const click = (cell, x, y) => { if (isPlacementPreview(cell, x, y)) onPlacePath(x, y); if (mode === 'REMOVE_PATH' && cell?.kind === 'PATH') onRemovePath(x, y); if (mode === 'PEEK_GOAL' && cell?.kind === 'GOAL' && !cell.revealed) onPeekGoal(cell.goalIndex); };
   const setPoint = event => pointers.current.set(event.pointerId, { x: event.clientX, y: event.clientY });
   const beginPinch = () => { if (pointers.current.size === 2) { const points = [...pointers.current.values()]; pinch.current = { distance: distance(points), zoom: view.z }; drag.current = null; } };
   const down = event => {
     setPoint(event); event.currentTarget.setPointerCapture(event.pointerId); beginPinch();
-    moved.current = false;
     if (pointers.current.size === 1 && !event.target.closest('.board-cell')) drag.current = { x:event.clientX, y:event.clientY, ox:view.x, oy:view.y };
   };
   const move = event => {
     if (!pointers.current.has(event.pointerId)) return; setPoint(event);
-    if (pinch.current && pointers.current.size >= 2) { moved.current = true; const points = [...pointers.current.values()]; setView(current => ({ ...current, z: Math.max(.65, Math.min(1.7, pinch.current.zoom * distance(points) / pinch.current.distance)) })); return; }
+    if (pinch.current && pointers.current.size >= 2) { const points = [...pointers.current.values()]; setView(current => ({ ...current, z: Math.max(.65, Math.min(1.7, pinch.current.zoom * distance(points) / pinch.current.distance)) })); return; }
     const activeDrag = drag.current;
-    if (activeDrag) { if (Math.abs(event.clientX - activeDrag.x) + Math.abs(event.clientY - activeDrag.y) > 4) moved.current = true; setView(current => ({ ...current, x:activeDrag.ox + event.clientX - activeDrag.x, y:activeDrag.oy + event.clientY - activeDrag.y })); }
+    if (activeDrag) setView(current => ({ ...current, x:activeDrag.ox + event.clientX - activeDrag.x, y:activeDrag.oy + event.clientY - activeDrag.y }));
   };
   const release = event => { pointers.current.delete(event.pointerId); if (pointers.current.size < 2) pinch.current = null; if (!pointers.current.size) drag.current = null; };
   return <div className="board-frame" onPointerDown={down} onPointerMove={move} onPointerUp={release} onPointerCancel={release} onWheel={event => { setView(current => ({ ...current, z:Math.max(.65, Math.min(1.7, current.z - event.deltaY * .001)) })); }}>
@@ -95,7 +93,7 @@ export function Board({ state, selectedCard, rotation, onPlacePath, onRemovePath
       {ys.flatMap(y => xs.map(x => {
         const cell = cells.get(`${x},${y}`);
         const candidate = selectable(cell, x, y);
-        return <button key={`${x},${y}`} data-cell={`${x},${y}`} className={`board-cell ${cell ? 'occupied' : ''} ${cell?.kind === 'GOAL' && cell.revealed ? 'goal-revealed' : ''} ${candidate ? 'candidate' : ''}`} onClick={() => click(cell, x, y)} aria-label={`${x}, ${y} 칸`}>
+        return <button key={`${x},${y}`} data-cell={`${x},${y}`} className={`board-cell ${cell ? 'occupied' : ''} ${cell?.kind === 'GOAL' && cell.revealed ? 'goal-revealed' : ''} ${candidate ? 'candidate' : ''}`} onPointerDown={event => event.stopPropagation()} onPointerUp={event => event.stopPropagation()} onClick={() => click(cell, x, y)} aria-label={`${x}, ${y} 칸`}>
           {cell?.kind === 'START' && <><PathIcon connections={cell.connections} routes={cell.routes}/><span className="cell-label">출발</span></>}
           {cell?.kind === 'PATH' && <PathIcon connections={cell.connections} routes={cell.routes}/>}
           {cell?.kind === 'GOAL' && <PathIcon goal revealed={cell.revealed} treasure={cell.goalType === 'TREASURE'}/>}

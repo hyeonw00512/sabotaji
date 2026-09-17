@@ -25,7 +25,7 @@ export function Game({ state, me, isSpectator, soundOn, onSoundToggle, onPlay, o
   useEffect(() => { if (!me.hand.some(card => card.id === selected)) setSelected(null); }, [me.hand, selected]);
   const finish = promise => promise.then(ok => { if (ok) setSelected(null); });
   const choose = card => { setSelected(card.id === selected ? null : card.id); setRotation(0); };
-  const hint = !selectedCard ? '카드를 선택하거나 길 카드를 보드로 드래그하세요.' : selectedCard.type === 'PATH' ? '빈 칸을 클릭하거나 보드로 드래그해 터널을 배치하세요.' : targetAction ? '대상 플레이어를 선택하세요.' : selectedCard.action === 'REMOVE_PATH' ? '제거할 터널 카드를 선택하세요.' : '확인할 숨겨진 목표를 선택하세요.';
+  const hint = !selectedCard ? '길 카드 또는 아이템 카드를 선택하세요.' : selectedCard.type === 'PATH' ? '초록색 놓기 칸을 클릭해 터널을 배치하세요.' : targetAction ? '대상과 장비를 선택하세요.' : selectedCard.action === 'REMOVE_PATH' ? '제거할 터널 카드를 선택하세요.' : '확인할 숨겨진 목표를 선택하세요.';
 
   return <main className="game-shell">
     <header className="game-header"><div><span className="eyebrow">라운드 {state.game.round}</span><h1>{isSpectator ? '관전 중' : isGoldDraft ? `${state.players.find(player => player.id === state.game.rewardPlayerId)?.nickname || '플레이어'} 님이 금 조각 선택 중` : isPlaying ? (isTurn ? '내 차례입니다' : `${turnName} 님의 차례`) : '라운드 결과'}</h1></div><div className="stats"><button className="sound-toggle" onClick={onSoundToggle} aria-label="효과음 켜기 또는 끄기">{soundOn ? '🔊' : '🔇'}</button><span>덱 <b>{state.game.deckCount}</b></span><span>버림 <b>{state.game.discardCount}</b></span><span className="role">{isSpectator ? '관전자' : me.role?.name}</span></div></header>
