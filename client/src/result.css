@@ -1,0 +1,34 @@
+.result-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: grid;
+  place-items: center;
+  padding: 18px;
+  background: #070b08bd;
+  backdrop-filter: blur(5px);
+}
+.result-card {
+  width: min(520px, 100%);
+  max-height: 88vh;
+  overflow: auto;
+  background: #172119;
+  border: 1px solid #6d825d;
+  border-radius: 20px;
+  padding: 28px;
+  box-shadow: 0 25px 90px #000;
+}
+.result-card h2 { margin: 10px 0; font-size: 2rem; color: var(--gold); }
+.result-card > p { color: #c9d4ca; line-height: 1.5; }
+.result-card .reward { margin: 12px 0; color: var(--gold2); font-weight: 800; }
+.result-roles { display: grid; gap: 7px; margin: 20px 0; }
+.result-roles > div { display: grid; grid-template-columns: 1fr 1fr auto; gap: 9px; align-items: center; background: #101811; border: 1px solid var(--line); border-radius: 9px; padding: 10px; font-size: .86rem; }
+.result-roles span { color: var(--gold2); }
+.result-roles strong { color: #dbe8dc; }
+.result-card .primary { margin-top: 4px; }
+.sound-toggle { border: 1px solid var(--line); background: #18221b; color: var(--ink); border-radius: 8px; padding: 7px 9px; }
+@media (max-width: 520px) { .result-card { padding: 22px 18px; } .result-card h2 { font-size: 1.6rem; } }
+.player-mini.disconnected { opacity: .58; }
+.player-mini.disconnected span { color: #e0a56d; }
+.final-ranking{margin:16px 0;padding:0;list-style:none;border-top:1px solid var(--line)}.final-ranking li{display:flex;justify-content:space-between;padding:9px 2px;border-bottom:1px solid var(--line);color:var(--muted)}.final-ranking b{color:var(--gold2)}.reward span{display:inline-block;margin-left:5px;color:var(--gold2);font-weight:800}
+.gold-options{display:flex;justify-content:center;gap:12px;margin-top:22px}.gold-options button{min-width:92px;padding:18px 12px;border:1px solid #a98331;border-radius:12px;background:linear-gradient(145deg,#f8d57a,#9d7324);color:#211706}.gold-options b,.gold-options span{display:block}.gold-options b{font-size:1.25rem}.gold-options span{margin-top:4px;font-size:.78rem}

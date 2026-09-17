@@ -1,0 +1,24 @@
+{
+  "turnDelayMs": 900,
+  "roles": {
+    "MINER": {
+      "actionOrder": ["REPAIR", "PEEK_GOAL"],
+      "repairTarget": "SELF_THEN_NEXT",
+      "pathWeights": {
+        "frontierX": 100,
+        "reachableCells": 5,
+        "revealedGoals": 200
+      }
+    },
+    "SABOTEUR": {
+      "actionOrder": ["BREAK", "REMOVE_PATH", "PEEK_GOAL"],
+      "breakTarget": "NEXT",
+      "removePath": "CUT_REACHABLE",
+      "pathWeights": {
+        "frontierX": -100,
+        "reachableCells": -5,
+        "revealedGoals": -200
+      }
+    }
+  }
+}
