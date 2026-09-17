@@ -46,6 +46,11 @@
 .lobby-invite > span { color: var(--gold); font-size: .72rem; font-weight: 900; }
 .lobby-invite code { overflow: hidden; color: #aebcad; font-size: .7rem; text-overflow: ellipsis; white-space: nowrap; }
 .lobby-invite button { border: 1px solid #5e704f; border-radius: 7px; padding: 6px 9px; background: #273328; color: var(--ink); font-size: .73rem; font-weight: 800; }
+.board-guide { position: absolute; z-index: 4; left: 50%; top: 12px; transform: translateX(-50%); max-width: calc(100% - 110px); padding: 7px 11px; border: 1px solid #546952; border-radius: 999px; background: #0d140ee6; color: #c9d8c8; font-size: .72rem; font-weight: 800; white-space: nowrap; pointer-events: none; }
+.board-guide.no-placement { border-color: #a46456; color: #ffd1c5; }
+.board-cell.candidate::after { content: "놓기"; position: absolute; inset: 0; display: grid; place-items: center; border: 2px solid #71c38a; border-radius: inherit; background: #3a9b581c; color: #baf1c8; font-size: .65rem; font-weight: 900; text-shadow: 0 1px 2px #000; }
+.board-cell.candidate:hover::after { background: #3a9b5845; }
+@media (max-width: 560px) { .board-guide { top: 8px; max-width: calc(100% - 24px); font-size: .64rem; padding: 5px 8px; } }
 @media (max-width: 850px) {
   .home-shell { display: block; min-height: 100svh; padding: 20px 16px 34px; overflow: auto; }
   .home-brand { padding: 8px 4px 24px; text-align: center; }

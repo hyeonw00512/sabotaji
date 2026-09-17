@@ -11,13 +11,17 @@ export function Game({ state, me, isSpectator, soundOn, onSoundToggle, onPlay, o
   const [rotation, setRotation] = useState(0);
   const [mobilePanel, setMobilePanel] = useState(null);
   const [dismissedRoleRevealId, setDismissedRoleRevealId] = useState(null);
+  const [dismissedGoalRevealId, setDismissedGoalRevealId] = useState(null);
+  const [roleReviewOpen, setRoleReviewOpen] = useState(false);
   const isPlaying = state.game.phase === 'PLAYING';
   const isGoldDraft = state.game.phase === 'GOLD_DRAFT';
   const isTurn = isPlaying && !me.aiControlled && state.game.turnPlayerId === me.playerId;
   const turnName = state.players.find(player => player.id === state.game.turnPlayerId)?.nickname;
   const selectedCard = useMemo(() => me.hand.find(card => card.id === selected), [me.hand, selected]);
   const targetAction = selectedCard?.action === 'BREAK' || selectedCard?.action === 'REPAIR';
-  const showRoleReveal = isPlaying && !isSpectator && Boolean(me.role) && me.roleRevealId === state.game.roleRevealId && dismissedRoleRevealId !== state.game.roleRevealId;
+  const showRoleReveal = !isSpectator && Boolean(me.role) && (roleReviewOpen || (isPlaying && me.roleRevealId === state.game.roleRevealId && dismissedRoleRevealId !== state.game.roleRevealId));
+  const goalReveal = state.game.goalReveal;
+  const showGoalReveal = Boolean(goalReveal?.id) && dismissedGoalRevealId !== goalReveal.id;
   useEffect(() => { if (!me.hand.some(card => card.id === selected)) setSelected(null); }, [me.hand, selected]);
   const finish = promise => promise.then(ok => { if (ok) setSelected(null); });
   const choose = card => { setSelected(card.id === selected ? null : card.id); setRotation(0); };
@@ -27,18 +31,19 @@ export function Game({ state, me, isSpectator, soundOn, onSoundToggle, onPlay, o
     <header className="game-header"><div><span className="eyebrow">라운드 {state.game.round}</span><h1>{isSpectator ? '관전 중' : isGoldDraft ? `${state.players.find(player => player.id === state.game.rewardPlayerId)?.nickname || '플레이어'} 님이 금 조각 선택 중` : isPlaying ? (isTurn ? '내 차례입니다' : `${turnName} 님의 차례`) : '라운드 결과'}</h1></div><div className="stats"><button className="sound-toggle" onClick={onSoundToggle} aria-label="효과음 켜기 또는 끄기">{soundOn ? '🔊' : '🔇'}</button><span>덱 <b>{state.game.deckCount}</b></span><span>버림 <b>{state.game.discardCount}</b></span><span className="role">{isSpectator ? '관전자' : me.role?.name}</span></div></header>
     <div className="game-grid">
       <aside className="players card"><h2>플레이어</h2>{state.players.map(player => <PlayerMini key={player.id} player={player} current={player.id === state.game.turnPlayerId}/>)}<p className="spectator-note">관전자 {state.spectators?.length || 0}명</p></aside>
-      <Board state={state} selectedCard={isTurn ? selectedCard : null} onPlacePath={(x, y) => finish(onPlay({ cardId: selected, x, y, rotation }))} onDropPath={(cardId, x, y) => finish(onPlay({ cardId, x, y, rotation: 0 }))} onRemovePath={(x, y) => finish(onAction({ cardId: selected, x, y }))} onPeekGoal={goalIndex => finish(onAction({ cardId: selected, goalIndex }))}/>
+      <Board state={state} selectedCard={isTurn ? selectedCard : null} rotation={rotation} onPlacePath={(x, y) => finish(onPlay({ cardId: selected, x, y, rotation }))} onRemovePath={(x, y) => finish(onAction({ cardId: selected, x, y }))} onPeekGoal={goalIndex => finish(onAction({ cardId: selected, goalIndex }))}/>
       <ChatPanel state={state} onSend={onSend}/>
     </div>
     <section className="hand">
-      <div className="hand-head"><div><span className="eyebrow">{isSpectator ? '관전 모드' : me.aiControlled ? 'AI 대행 중' : '내 손패'}</span><b>{isSpectator ? '비밀 역할·손패·목표 정보는 표시되지 않습니다.' : me.aiControlled ? 'AI가 이번 게임을 진행합니다. 다음 라운드부터 직접 플레이할 수 있습니다.' : hint}</b></div>{selectedCard && isTurn && <div className="card-actions">{selectedCard.type === 'PATH' && <button disabled={!selectedCard.rotatable} onClick={() => setRotation(value => value === 0 ? 180 : 0)}>회전 {rotation}°</button>}<button className="danger" onClick={() => finish(onDiscard(selected))}>버리기</button></div>}</div>
-      {targetAction && isTurn && <div className="target-strip"><span>{selectedCard.name}: 대상 장비 선택</span>{state.players.flatMap(player => (selectedCard.equipmentOptions || [selectedCard.equipment]).map(equipment => <button key={`${player.id}-${equipment}`} disabled={['LEFT','RECONNECTING'].includes(player.connectionState) || (selectedCard.action === 'BREAK' ? !player.equipment[equipment] : player.equipment[equipment])} onClick={() => finish(onAction({ cardId: selected, targetPlayerId: player.id, equipment }))}>{player.nickname} · {equipmentNames[equipment]}</button>))}</div>}
+      <div className="hand-head"><div><span className="eyebrow">{isSpectator ? '관전 모드' : me.aiControlled ? 'AI 대행 중' : '내 손패'}</span><b>{isSpectator ? '비밀 역할·손패·목표 정보는 표시되지 않습니다.' : me.aiControlled ? 'AI가 이번 게임을 진행합니다. 다음 라운드부터 직접 플레이할 수 있습니다.' : hint}</b></div><div className="hand-head-actions">{!isSpectator && me.role && <button className={`hand-role ${me.role.team === 'SABOTEURS' ? 'saboteur' : 'miner'}`} onClick={() => setRoleReviewOpen(true)}><span>내 직업</span><b>{me.role.name}</b></button>}{selectedCard && isTurn && <div className="card-actions">{selectedCard.type === 'PATH' && <button disabled={!selectedCard.rotatable} onClick={() => setRotation(value => value === 0 ? 180 : 0)}>회전 {rotation}°</button>}<button className="danger" onClick={() => finish(onDiscard(selected))}>버리기</button></div>}</div></div>
+      {targetAction && isTurn && <section className="action-target-panel"><div><span className="eyebrow">아이템 사용</span><b>{selectedCard.name} · 대상과 장비를 클릭하세요</b></div><div className="target-strip">{state.players.flatMap(player => (selectedCard.equipmentOptions || [selectedCard.equipment]).map(equipment => <button key={`${player.id}-${equipment}`} disabled={['LEFT','RECONNECTING'].includes(player.connectionState) || (selectedCard.action === 'BREAK' ? !player.equipment[equipment] : player.equipment[equipment])} onClick={() => finish(onAction({ cardId: selected, targetPlayerId: player.id, equipment }))}>{selectedCard.action === 'BREAK' ? '고장' : '수리'} · {player.nickname} · {equipmentNames[equipment]}</button>))}</div></section>}
       {me.peekedGoals?.length > 0 && <div className="peek-results">비밀 탐사 기록: {me.peekedGoals.map(item => <span key={item.goalIndex}>목표 {item.goalIndex + 1} · {item.goalType === 'TREASURE' ? '광맥' : '빈 암석'}</span>)}</div>}
-      <div className="cards">{me.hand.map(card => <button key={card.id} className={`hand-card ${card.type === 'ACTION' ? 'action-card' : ''} ${selected === card.id ? 'selected' : ''}`} onClick={() => choose(card)} draggable={isTurn && card.type === 'PATH'} onDragStart={event => { setSelected(card.id); setRotation(0); event.dataTransfer.effectAllowed = 'move'; event.dataTransfer.setData('application/x-saboteur-path', card.id); }} disabled={!isTurn}><div className="card-art" style={card.type === 'PATH' ? { transform: `rotate(${selected === card.id ? rotation : 0}deg)` } : {}}>{card.type === 'PATH' ? <PathIcon connections={card.connections} routes={card.routes}/> : <ActionIcon action={card.action} equipment={card.equipment} equipmentOptions={card.equipmentOptions}/>}</div><b>{card.name}</b><small>{card.type === 'ACTION' ? card.description : '터널 카드'}</small></button>)}</div>
+      <div className="cards">{me.hand.map(card => <button key={card.id} className={`hand-card ${card.type === 'ACTION' ? 'action-card' : ''} ${selected === card.id ? 'selected' : ''}`} onClick={() => choose(card)} disabled={!isTurn}><div className="card-art" style={card.type === 'PATH' ? { transform: `rotate(${selected === card.id ? rotation : 0}deg)` } : {}}>{card.type === 'PATH' ? <PathIcon connections={card.connections} routes={card.routes}/> : <ActionIcon action={card.action} equipment={card.equipment} equipmentOptions={card.equipmentOptions}/>}</div><b>{card.name}</b><small>{card.type === 'ACTION' ? card.description : '터널 카드'}</small></button>)}</div>
     </section>
     <div className="mobile-dock"><button onClick={() => setMobilePanel(mobilePanel === 'players' ? null : 'players')}>대원</button><button onClick={() => setMobilePanel(mobilePanel === 'chat' ? null : 'chat')}>채팅·기록</button><span>{isSpectator ? '관전자' : me.role?.name}</span></div>
     {mobilePanel && <div className="mobile-sheet">{mobilePanel === 'chat' ? <ChatPanel state={state} onSend={onSend}/> : <div className="mobile-roster">{state.players.map(player => <PlayerMini key={player.id} player={player} current={player.id === state.game.turnPlayerId}/>)}</div>}<button className="sheet-close" onClick={() => setMobilePanel(null)}>닫기</button></div>}
-    {showRoleReveal && <RoleReveal role={me.role} round={state.game.round} onConfirm={() => setDismissedRoleRevealId(state.game.roleRevealId)}/>}
+    {showRoleReveal && <RoleReveal role={me.role} round={state.game.round} onConfirm={() => { setDismissedRoleRevealId(state.game.roleRevealId); setRoleReviewOpen(false); }}/>}
+    {!showRoleReveal && showGoalReveal && <GoalReveal goal={goalReveal} onConfirm={() => setDismissedGoalRevealId(goalReveal.id)}/>}
     {isGoldDraft && <GoldDraft mine={Boolean(me.goldDraft)} options={me.goldDraft?.options || []} onChoose={onChooseGold}/>} 
     {!isPlaying && !isGoldDraft && <RoundResult result={state.game.result} host={state.hostId === me.playerId} final={state.game.phase === 'GAME_END'} onNextRound={onNextRound} onRematch={onRematch}/>} 
   </main>;
@@ -47,6 +52,11 @@ export function Game({ state, me, isSpectator, soundOn, onSoundToggle, onPlay, o
 function RoleReveal({ role, round, onConfirm }) {
   const saboteur = role.team === 'SABOTEURS';
   return <div className="role-reveal-overlay" role="dialog" aria-modal="true" aria-labelledby="role-reveal-title"><section className={`role-reveal-card ${saboteur ? 'saboteur' : 'miner'}`}><span className="eyebrow">라운드 {round} · 비밀 역할</span><div className="role-emblem" aria-hidden="true">{saboteur ? '⚠' : '⛏'}</div><h2 id="role-reveal-title">당신은 {role.name}</h2><p>{role.description}</p><small>이 정보는 본인에게만 표시됩니다.</small><button className="primary" onClick={onConfirm}>확인하고 시작</button></section></div>;
+}
+
+function GoalReveal({ goal, onConfirm }) {
+  const treasure = goal.goalType === 'TREASURE';
+  return <div className="role-reveal-overlay goal-reveal-overlay" role="dialog" aria-modal="true" aria-labelledby="goal-reveal-title"><section className={`role-reveal-card goal-reveal-card ${treasure ? 'miner' : 'saboteur'}`}><span className="eyebrow">목표 카드 공개</span><div className="role-emblem" aria-hidden="true">{treasure ? '◆' : '×'}</div><h2 id="goal-reveal-title">{treasure ? '광맥을 발견했습니다!' : '꽝! 빈 암석입니다'}</h2><p>{treasure ? '진짜 광맥이 공개되었습니다. 탐사대가 보상을 선택합니다.' : '목표 카드를 뒤집어 모두에게 공개했습니다. 다른 목표를 향해 계속 탐사하세요.'}</p><button className="primary" onClick={onConfirm}>확인</button></section></div>;
 }
 
 function GoldDraft({ mine, options, onChoose }) {
