@@ -34,6 +34,12 @@
 .entry-heading > span { color: var(--gold); font-size: .73rem; font-weight: 900; letter-spacing: .13em; text-transform: uppercase; }
 .entry-heading h2 { margin: 5px 0 6px; font-family: Georgia, "Noto Serif KR", serif; font-size: 1.65rem; }
 .entry-heading p, .invite-note { color: var(--muted); font-size: .84rem; line-height: 1.55; }
+.invite-input-note { margin: -5px 2px 10px; color: var(--muted); font-size: .72rem; line-height: 1.45; }
+.inapp-browser-notice { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px 12px; align-items: center; margin: 0 0 18px; padding: 12px; border: 1px solid #8d733e; border-radius: 12px; background: linear-gradient(135deg, #57421f, #202a20); }
+.inapp-browser-notice b { color: #ffe1a0; font-size: .82rem; }
+.inapp-browser-notice p { margin: 4px 0 0; color: #d3dbcf; font-size: .73rem; line-height: 1.4; }
+.inapp-browser-notice button { border: 1px solid #d3a94e; border-radius: 8px; padding: 8px 9px; background: #efbd57; color: #291e0d; font-size: .72rem; font-weight: 900; }
+.inapp-browser-notice small { grid-column: 1 / -1; color: #ffe4a7; font-size: .72rem; line-height: 1.4; }
 .home-create span { font-size: 1.1rem; margin-right: 5px; }
 .home-join { min-height: 48px; }
 .invite-banner { display: flex; align-items: center; gap: 12px; margin: -4px 0 22px; padding: 13px; border: 1px solid #8d733e; border-radius: 13px; background: linear-gradient(135deg, #60451e8c, #202719); }
@@ -48,8 +54,14 @@
 .lobby-invite button { border: 1px solid #5e704f; border-radius: 7px; padding: 6px 9px; background: #273328; color: var(--ink); font-size: .73rem; font-weight: 800; }
 .board-guide { position: absolute; z-index: 4; left: 50%; top: 12px; transform: translateX(-50%); max-width: calc(100% - 110px); padding: 7px 11px; border: 1px solid #546952; border-radius: 999px; background: #0d140ee6; color: #c9d8c8; font-size: .72rem; font-weight: 800; white-space: nowrap; pointer-events: none; }
 .board-guide.no-placement { border-color: #a46456; color: #ffd1c5; }
-.board-cell.candidate::after { content: "놓기"; position: absolute; inset: 0; display: grid; place-items: center; border: 2px solid #71c38a; border-radius: inherit; background: #3a9b581c; color: #baf1c8; font-size: .65rem; font-weight: 900; text-shadow: 0 1px 2px #000; }
-.board-cell.candidate:hover::after { background: #3a9b5845; }
+.board-cell.candidate { animation: interaction-cell-pulse 1.05s ease-in-out infinite; }
+.board-cell.candidate::after { content: attr(data-interaction-label); position: absolute; inset: 0; display: grid; place-items: center; border: 2px solid #71c38a; border-radius: inherit; background: #3a9b5828; color: #d2ffda; font-size: .65rem; font-weight: 900; text-shadow: 0 1px 2px #000; }
+.board-cell.candidate:hover::after { background: #3a9b5860; }
+.board-cell.candidate-remove::after { border-color: #e78070; background: #c752452d; color: #ffe1da; }
+.board-cell.candidate-remove:hover::after { background: #c7524564; }
+.board-cell.candidate-peek::after { border-color: #71c8d9; background: #267f9b30; color: #d6f9ff; }
+.board-cell.candidate-peek:hover::after { background: #267f9b65; }
+@keyframes interaction-cell-pulse { 50% { border-color: #d9f6b5; box-shadow: 0 0 0 4px #70c9862a, 0 0 20px #6bc57b55; } }
 @media (max-width: 560px) { .board-guide { top: 8px; max-width: calc(100% - 24px); font-size: .64rem; padding: 5px 8px; } }
 @media (max-width: 850px) {
   .home-shell { display: block; min-height: 100svh; height: auto; padding: 20px 16px calc(34px + env(safe-area-inset-bottom)); overflow: visible; }
@@ -63,6 +75,8 @@
   .home-entry { max-width: 520px; margin: 0 auto; padding: 21px 17px; }
   .lobby-invite { grid-template-columns: 1fr auto; }
   .lobby-invite > span { grid-column: 1 / -1; }
+  .inapp-browser-notice { grid-template-columns: 1fr; }
+  .inapp-browser-notice button { width: 100%; }
 }
 @media (max-width: 420px) {
   .home-shell { padding-inline: 11px; }

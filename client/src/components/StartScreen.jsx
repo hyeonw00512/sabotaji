@@ -1,6 +1,25 @@
 import { useMemo, useState } from 'react';
 import { RecordsPanel } from './RecordsPanel.jsx';
 
+const roomCodePattern = /^[A-Z0-9]{6}$/;
+
+function extractRoomCode(value = '') {
+  const raw = String(value).trim();
+  if (!raw) return '';
+  try {
+    const parsed = new URL(raw);
+    const queryCode = parsed.searchParams.get('room');
+    const pathCode = parsed.pathname.match(/(?:^|\/)([A-Z0-9]{6})\/?$/i)?.[1];
+    const candidate = queryCode || pathCode || '';
+    return roomCodePattern.test(candidate.toUpperCase()) ? candidate.toUpperCase() : '';
+  } catch {
+    const queryCode = raw.match(/[?&]room=([^&#\s]+)/i)?.[1];
+    const candidate = queryCode ? decodeURIComponent(queryCode) : raw;
+    const match = candidate.match(/[A-Z0-9]{6}/i)?.[0] || '';
+    return roomCodePattern.test(match.toUpperCase()) ? match.toUpperCase() : '';
+  }
+}
+
 function MineEmblem() {
   return <svg viewBox="0 0 160 130" aria-hidden="true">
     <path className="home-emblem-rock" d="M10 112 35 31 78 8l47 28 25 76Z" />
@@ -18,7 +37,8 @@ export function StartScreen({ onCreate, onJoin, onRefresh, onRefreshRecords, pub
   const [showSettings, setShowSettings] = useState(false);
   const [settings, setSettings] = useState({ maxPlayers:8, rounds:3, turnSeconds:0, isPublic:false, actionCards:true, specialRules:false, aiReplacement:true });
   const inviteMode = useMemo(() => Boolean(initialCode), [initialCode]);
-  const go = fn => { localStorage.setItem('mine:nickname', nickname.trim()); fn({ nickname, roomCode:code.trim().toUpperCase(), password, asSpectator, settings }); };
+  const parsedCode = useMemo(() => extractRoomCode(code), [code]);
+  const go = fn => { localStorage.setItem('mine:nickname', nickname.trim()); fn({ nickname, roomCode:parsedCode, password, asSpectator, settings }); };
   const selectRoom = (roomCode, spectator) => { setCode(roomCode); setPassword(''); setAsSpectator(spectator); document.getElementById('room-code-input')?.focus(); };
 
   return <main className="start-shell home-shell">
@@ -31,6 +51,7 @@ export function StartScreen({ onCreate, onJoin, onRefresh, onRefreshRecords, pub
       <div className="home-features" aria-label="게임 특징"><span>◆ 비밀 역할</span><span>◆ 터널 연결</span><span>◆ 실시간 추리</span></div>
     </section>
     <section className={`entry-card home-entry ${inviteMode ? 'invite-entry' : ''}`}>
+      <InAppBrowserNotice />
       {inviteMode && <div className="invite-banner"><span className="invite-banner-icon">✦</span><div><b>초대받은 탐사대</b><p><strong>{initialCode}</strong> 방에 참가합니다</p></div></div>}
       {!inviteMode && <div className="entry-heading"><span>광산 입구</span><h2>탐사를 시작하세요</h2><p>방을 만들거나 받은 초대 코드로 합류할 수 있습니다.</p></div>}
       <label>닉네임<input value={nickname} maxLength={20} onChange={event => setNickname(event.target.value)} placeholder="게임에서 사용할 이름"/></label>
@@ -47,10 +68,11 @@ export function StartScreen({ onCreate, onJoin, onRefresh, onRefreshRecords, pub
         <button className="primary home-create" disabled={busy || !nickname.trim()} onClick={() => go(onCreate)}><span>⛏</span> 새 탐사대 만들기</button>
         <div className="divider"><span>또는 코드로 입장</span></div>
       </>}
-      <label>{inviteMode ? '초대 방 코드' : '방 코드'}<input id="room-code-input" value={code} maxLength={6} onChange={event => setCode(event.target.value.toUpperCase())} placeholder="예: A7K92D"/></label>
+      <label>{inviteMode ? '초대 방 코드 또는 링크' : '방 코드 또는 초대 링크'}<input id="room-code-input" value={code} onChange={event => setCode(event.target.value)} placeholder="A7K92D 또는 받은 초대 링크 붙여넣기" autoCapitalize="characters" autoCorrect="off" spellCheck="false"/></label>
+      {!inviteMode && <p className="invite-input-note">카카오톡으로 받은 전체 초대 링크를 그대로 붙여넣어도 됩니다.</p>}
       <label>방 비밀번호 <small>필요한 경우</small><input type="password" value={password} maxLength={50} onChange={event => setPassword(event.target.value)} placeholder="비밀번호 입력"/></label>
       <label className="toggle-field"><input type="checkbox" checked={asSpectator} onChange={event => setAsSpectator(event.target.checked)}/><span>관전으로 입장</span></label>
-      <button className="secondary home-join" disabled={busy || !nickname.trim() || code.length !== 6} onClick={() => go(onJoin)}>{busy ? '광산으로 연결 중…' : asSpectator ? '관전 시작' : inviteMode ? '초대받은 방 입장' : '방 참가하기'}</button>
+      <button className="secondary home-join" disabled={busy || !nickname.trim() || !roomCodePattern.test(parsedCode)} onClick={() => go(onJoin)}>{busy ? '광산으로 연결 중…' : asSpectator ? '관전 시작' : inviteMode ? '초대받은 방 입장' : '방 참가하기'}</button>
       {inviteMode && <p className="invite-note">이 링크는 방 코드가 자동 입력됩니다. 닉네임만 정하면 바로 합류할 수 있어요.</p>}
       {!inviteMode && <section className="public-rooms">
         <div className="room-list-head"><h2>공개 대기실</h2><button onClick={onRefresh}>새로고침</button></div>
@@ -59,4 +81,30 @@ export function StartScreen({ onCreate, onJoin, onRefresh, onRefreshRecords, pub
       {!inviteMode && <RecordsPanel records={records} onRefresh={onRefreshRecords}/>} 
     </section>
   </main>;
+}
+
+function InAppBrowserNotice() {
+  const [message, setMessage] = useState('');
+  const userAgent = navigator.userAgent || '';
+  const inKakao = /KAKAOTALK/i.test(userAgent);
+  const android = /Android/i.test(userAgent);
+  if (!inKakao) return null;
+
+  const copy = async () => {
+    try { await navigator.clipboard?.writeText(location.href); }
+    catch { window.prompt('초대 링크를 복사하세요.', location.href); }
+  };
+  const openExternal = async () => {
+    await copy();
+    if (android) {
+      const target = location.href.replace(/^https?:\/\//i, '');
+      const scheme = location.protocol === 'https:' ? 'https' : 'http';
+      location.href = `intent://${target}#Intent;scheme=${scheme};action=android.intent.action.VIEW;end`;
+      setMessage('브라우저 선택 창이 나타나면 Chrome 또는 Samsung Internet을 선택하세요.');
+      return;
+    }
+    setMessage('링크를 복사했습니다. 카카오톡 메뉴에서 “다른 브라우저로 열기”를 선택해 Safari로 진행하세요.');
+  };
+
+  return <aside className="inapp-browser-notice" role="status"><div><b>카카오톡 안에서 열림</b><p>게임은 Chrome·Safari·Samsung Internet에서 가로모드로 플레이하는 것을 권장합니다.</p></div><button type="button" onClick={openExternal}>외부 브라우저로 열기</button>{message && <small>{message}</small>}</aside>;
 }

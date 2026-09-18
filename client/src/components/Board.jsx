@@ -93,7 +93,9 @@ export function Board({ state, selectedCard, rotation, onPlacePath, onRemovePath
       {ys.flatMap(y => xs.map(x => {
         const cell = cells.get(`${x},${y}`);
         const candidate = selectable(cell, x, y);
-        return <button key={`${x},${y}`} data-cell={`${x},${y}`} className={`board-cell ${cell ? 'occupied' : ''} ${cell?.kind === 'GOAL' && cell.revealed ? 'goal-revealed' : ''} ${candidate ? 'candidate' : ''}`} onPointerDown={event => event.stopPropagation()} onPointerUp={event => event.stopPropagation()} onClick={() => click(cell, x, y)} aria-label={`${x}, ${y} 칸`}>
+        const interactionClass = mode === 'PLACE' ? 'place' : mode === 'REMOVE_PATH' ? 'remove' : mode === 'PEEK_GOAL' ? 'peek' : '';
+        const interactionLabel = mode === 'PLACE' ? '놓기' : mode === 'REMOVE_PATH' ? '제거' : mode === 'PEEK_GOAL' ? '확인' : '';
+        return <button key={`${x},${y}`} data-cell={`${x},${y}`} data-interaction-label={candidate ? interactionLabel : undefined} className={`board-cell ${cell ? 'occupied' : ''} ${cell?.kind === 'GOAL' && cell.revealed ? 'goal-revealed' : ''} ${candidate ? `candidate candidate-${interactionClass}` : ''}`} onPointerDown={event => event.stopPropagation()} onPointerUp={event => event.stopPropagation()} onClick={() => click(cell, x, y)} aria-label={`${x}, ${y} 칸`}>
           {cell?.kind === 'START' && <><PathIcon connections={cell.connections} routes={cell.routes}/><span className="cell-label">출발</span></>}
           {cell?.kind === 'PATH' && <PathIcon connections={cell.connections} routes={cell.routes}/>}
           {cell?.kind === 'GOAL' && <PathIcon goal revealed={cell.revealed} treasure={cell.goalType === 'TREASURE'}/>}

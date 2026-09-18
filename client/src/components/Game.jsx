@@ -14,6 +14,8 @@ export function Game({ state, me, isSpectator, soundOn, onSoundToggle, onPlay, o
   const [dismissedGoalRevealId, setDismissedGoalRevealId] = useState(null);
   const [dismissedPeekRevealId, setDismissedPeekRevealId] = useState(null);
   const [roleReviewOpen, setRoleReviewOpen] = useState(false);
+  const [portraitDismissed, setPortraitDismissed] = useState(false);
+  const [portraitMode, setPortraitMode] = useState(() => window.matchMedia?.('(orientation: portrait)').matches ?? false);
   const isPlaying = state.game.phase === 'PLAYING';
   const isGoldDraft = state.game.phase === 'GOLD_DRAFT';
   const isTurn = isPlaying && !me.aiControlled && state.game.turnPlayerId === me.playerId;
@@ -26,13 +28,20 @@ export function Game({ state, me, isSpectator, soundOn, onSoundToggle, onPlay, o
   const peekReveal = me.peekReveal;
   const showPeekReveal = !isSpectator && Boolean(peekReveal?.id) && dismissedPeekRevealId !== peekReveal.id;
   useEffect(() => { document.body.classList.add('game-active'); return () => document.body.classList.remove('game-active'); }, []);
+  useEffect(() => {
+    const query = window.matchMedia?.('(orientation: portrait)');
+    if (!query) return undefined;
+    const update = () => { setPortraitMode(query.matches); if (!query.matches) setPortraitDismissed(false); };
+    query.addEventListener?.('change', update);
+    return () => query.removeEventListener?.('change', update);
+  }, []);
   useEffect(() => { if (!me.hand.some(card => card.id === selected)) setSelected(null); }, [me.hand, selected]);
   const finish = promise => promise.then(ok => { if (ok) setSelected(null); });
   const choose = card => { setSelected(card.id === selected ? null : card.id); setRotation(0); };
   const hint = !selectedCard ? '길 카드 또는 아이템 카드를 선택하세요.' : selectedCard.type === 'PATH' ? '초록색 놓기 칸을 클릭해 터널을 배치하세요.' : targetAction ? '대상과 장비를 선택하세요.' : selectedCard.action === 'REMOVE_PATH' ? '제거할 터널 카드를 선택하세요.' : '확인할 숨겨진 목표를 선택하세요.';
 
   return <main className="game-shell">
-    <header className="game-header"><div><span className="eyebrow">라운드 {state.game.round}</span><h1>{isSpectator ? '관전 중' : isGoldDraft ? `${state.players.find(player => player.id === state.game.rewardPlayerId)?.nickname || '플레이어'} 님이 금 조각 선택 중` : isPlaying ? (isTurn ? '내 차례입니다' : `${turnName} 님의 차례`) : '라운드 결과'}</h1></div><div className="stats"><button className="sound-toggle" onClick={onSoundToggle} aria-label="효과음 켜기 또는 끄기">{soundOn ? '🔊' : '🔇'}</button><span>덱 <b>{state.game.deckCount}</b></span><span>버림 <b>{state.game.discardCount}</b></span><span className="role">{isSpectator ? '관전자' : me.role?.name}</span></div></header>
+    <header className="game-header"><div><span className="eyebrow">라운드 {state.game.round}</span><h1>{isSpectator ? '관전 중' : isGoldDraft ? `${state.players.find(player => player.id === state.game.rewardPlayerId)?.nickname || '플레이어'} 님이 금 조각 선택 중` : isPlaying ? (isTurn ? '내 차례입니다' : `${turnName} 님의 차례`) : '라운드 결과'}</h1>{state.game.lastAction && <p className="last-action" title={state.game.lastAction.message}><span>방금 전</span>{state.game.lastAction.message}</p>}</div><div className="stats"><button className="sound-toggle" onClick={onSoundToggle} aria-label="효과음 켜기 또는 끄기">{soundOn ? '🔊' : '🔇'}</button><span>덱 <b>{state.game.deckCount}</b></span><span>버림 <b>{state.game.discardCount}</b></span><span className="role">{isSpectator ? '관전자' : me.role?.name}</span></div></header>
     <div className="game-grid">
       <aside className="players card"><h2>플레이어</h2>{state.players.map(player => <PlayerMini key={player.id} player={player} current={player.id === state.game.turnPlayerId}/>)}<p className="spectator-note">관전자 {state.spectators?.length || 0}명</p></aside>
       <Board state={state} selectedCard={isTurn ? selectedCard : null} rotation={rotation} onPlacePath={(x, y) => finish(onPlay({ cardId: selected, x, y, rotation }))} onRemovePath={(x, y) => finish(onAction({ cardId: selected, x, y }))} onPeekGoal={goalIndex => finish(onAction({ cardId: selected, goalIndex }))}/>
@@ -49,9 +58,24 @@ export function Game({ state, me, isSpectator, soundOn, onSoundToggle, onPlay, o
     {showRoleReveal && <RoleReveal role={me.role} round={state.game.round} onConfirm={() => { setDismissedRoleRevealId(state.game.roleRevealId); setRoleReviewOpen(false); }}/>}
     {!showRoleReveal && showGoalReveal && <GoalReveal goal={goalReveal} onConfirm={() => setDismissedGoalRevealId(goalReveal.id)}/>}
     {!showRoleReveal && !showGoalReveal && showPeekReveal && <PeekReveal goal={peekReveal} onConfirm={() => setDismissedPeekRevealId(peekReveal.id)}/>}
+    {!showRoleReveal && !showGoalReveal && !showPeekReveal && portraitMode && !portraitDismissed && <LandscapeGuide onContinue={() => setPortraitDismissed(true)}/>}
     {isGoldDraft && <GoldDraft mine={Boolean(me.goldDraft)} options={me.goldDraft?.options || []} onChoose={onChooseGold}/>} 
     {!isPlaying && !isGoldDraft && <RoundResult result={state.game.result} host={state.hostId === me.playerId} final={state.game.phase === 'GAME_END'} onNextRound={onNextRound} onRematch={onRematch}/>} 
   </main>;
+}
+
+function LandscapeGuide({ onContinue }) {
+  const [status, setStatus] = useState('');
+  const requestLandscape = async () => {
+    try {
+      if (!document.fullscreenElement && document.documentElement.requestFullscreen) await document.documentElement.requestFullscreen();
+      if (screen.orientation?.lock) await screen.orientation.lock('landscape');
+      setStatus('가로모드 전환을 요청했습니다. 화면을 돌려서 계속하세요.');
+    } catch {
+      setStatus('이 브라우저는 자동 전환을 지원하지 않습니다. 기기를 가로로 돌려주세요.');
+    }
+  };
+  return <div className="orientation-overlay" role="dialog" aria-modal="true" aria-labelledby="orientation-title"><section className="orientation-card"><span className="orientation-icon" aria-hidden="true">▭</span><span className="eyebrow">가로모드 권장</span><h2 id="orientation-title">기기를 가로로 돌려주세요</h2><p>넓은 보드와 손패를 함께 보려면 가로모드가 가장 편합니다.</p><button className="primary" onClick={requestLandscape}>가로모드로 전환</button><button className="setting-link orientation-continue" onClick={onContinue}>세로모드로 계속</button>{status && <small>{status}</small>}</section></div>;
 }
 
 function RoleReveal({ role, round, onConfirm }) {
@@ -73,7 +97,7 @@ function GoldDraft({ mine, options, onChoose }) {
   return <div className="result-overlay"><section className="result-card gold-draft"><span className="eyebrow">금 조각 선택</span><h2>{mine ? '가져갈 금 조각을 고르세요' : '탐사대가 금 조각을 고르는 중입니다'}</h2><p>{mine ? '선택한 금 조각은 즉시 공개되며, 다음 탐사대에게 선택권이 넘어갑니다.' : '선택 내용은 모두의 선택이 끝난 뒤 공개됩니다.'}</p>{mine && <div className="gold-options">{options.map(option => <button key={option.id} onClick={() => onChoose(option.id)}><b>금 {option.value}</b><span>조각</span></button>)}</div>}</section></div>;
 }
 
-function PlayerMini({ player, current }) { const state = player.connectionState === 'LEFT' ? '이탈' : player.connectionState === 'RECONNECTING' ? '재접속 대기' : player.connectionState === 'AI' ? 'AI 대행' : ''; return <div className={`player-mini ${current ? 'turn' : ''} ${state ? 'disconnected' : ''}`}><div><b>{player.nickname}</b><span>{state || `${player.cardCount}장 · ${player.score || 0}점`}</span></div><div className="equipment"><i className={player.equipment.PICK ? '' : 'broken'}>곡괭이</i><i className={player.equipment.CART ? '' : 'broken'}>수레</i><i className={player.equipment.LAMP ? '' : 'broken'}>등불</i></div></div>; }
+function PlayerMini({ player, current }) { const state = player.connectionState === 'LEFT' ? '이탈' : player.connectionState === 'RECONNECTING' ? '재접속 대기' : player.connectionState === 'AI' ? 'AI 대행' : ''; const equipment = [['PICK', '곡괭이'], ['CART', '수레'], ['LAMP', '등불']]; const broken = equipment.filter(([key]) => !player.equipment[key]).map(([, name]) => name); return <div className={`player-mini ${current ? 'turn' : ''} ${state ? 'disconnected' : ''} ${broken.length ? 'blocked' : ''}`}><div><b>{player.nickname}</b><span>{state || `${player.cardCount}장 · ${player.score || 0}점`}</span></div><div className="equipment">{equipment.map(([key, name]) => <i key={key} className={player.equipment[key] ? '' : 'broken'}>{player.equipment[key] ? '✓' : '🚫'} {name}</i>)}</div>{broken.length > 0 && <p className="equipment-alert">길 카드 금지 · {broken.join('·')} 고장</p>}</div>; }
 
 function RoundResult({ result, host, final, onNextRound, onRematch }) {
   const winner = result?.winnerTeam === 'MINERS' ? '탐사대' : '교란자';

@@ -29,6 +29,16 @@
   .mobile-dock button { min-height: 36px; padding: 6px 10px; }
   .mobile-sheet { inset: max(64px, calc(env(safe-area-inset-top) + 56px)) 7px calc(58px + env(safe-area-inset-bottom)); border-radius: 14px; }
 }
+
+.orientation-overlay { position: fixed; inset: 0; z-index: 90; display: grid; place-items: center; padding: max(18px, env(safe-area-inset-top)) max(18px, env(safe-area-inset-right)) max(18px, env(safe-area-inset-bottom)) max(18px, env(safe-area-inset-left)); background: #071009ec; backdrop-filter: blur(5px); }
+.orientation-card { width: min(100%, 360px); padding: 26px 22px 20px; border: 1px solid #806b3d; border-radius: 20px; background: linear-gradient(145deg, #203224, #101911); box-shadow: 0 22px 80px #000a; text-align: center; }
+.orientation-icon { display: grid; place-items: center; width: 56px; height: 56px; margin: 0 auto 14px; border: 1px solid #d7ad56; border-radius: 14px; color: var(--gold); font-size: 2rem; transform: rotate(-16deg); }
+.orientation-card h2 { margin: 8px 0; font-size: 1.3rem; }
+.orientation-card p { color: var(--muted); font-size: .86rem; line-height: 1.55; }
+.orientation-card .primary { margin-top: 18px; }
+.orientation-continue { margin-top: 5px; font-size: .78rem; }
+.orientation-card small { display: block; margin-top: 6px; color: #ffd980; font-size: .72rem; line-height: 1.4; }
+@media (min-width: 851px), (orientation: landscape) { .orientation-overlay { display: none; } }
 @media (max-width: 520px) {
   .game-shell { grid-template-rows: minmax(54px, auto) minmax(175px, 1fr) minmax(126px, 36dvh) calc(48px + env(safe-area-inset-bottom)); }
   .stats > span:nth-of-type(1), .stats > span:nth-of-type(2) { display: none; }

@@ -2,6 +2,8 @@
 .game-header { height: auto; min-height: 68px; padding-top: max(10px, env(safe-area-inset-top)); }
 .game-header > div:first-child { min-width: 0; }
 .game-header h1 { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.last-action { display: flex; align-items: center; gap: 6px; max-width: min(620px, 58vw); margin-top: 3px; overflow: hidden; color: #c8d7c8; font-size: .72rem; line-height: 1.3; text-overflow: ellipsis; white-space: nowrap; }
+.last-action span { flex: 0 0 auto; padding: 2px 5px; border: 1px solid #6f855f; border-radius: 999px; color: #e8d18a; font-size: .62rem; font-weight: 900; }
 .hand { max-height: 285px; overflow-y: auto; overscroll-behavior: contain; }
 .hand-head-actions { display: flex; align-items: center; justify-content: flex-end; gap: 8px; flex-shrink: 0; }
 .hand-role { display: grid; gap: 1px; min-width: 106px; padding: 7px 10px; border: 1px solid #7a975d; border-radius: 9px; background: #263722; color: #e5f1df; text-align: left; }
@@ -19,6 +21,20 @@
 .goal-card.revealed.treasure text { fill: #ffe17d; filter: drop-shadow(0 0 5px #e8ad31); }
 .goal-reveal-card .role-emblem { font-family: Georgia, serif; }
 .goal-reveal-card.saboteur .primary { background: #e4a07c; }
+.equipment-alert { margin: 6px 0 0; color: #ffb5a8; font-size: .67rem; font-weight: 800; }
+.player-mini.blocked { border-color: #7b4941; background: linear-gradient(100deg, #382622, transparent); }
+.equipment i.broken { border: 1px solid #bd675a; color: #ffd0c7; }
+.messages .message-item { display: grid; grid-template-columns: 54px minmax(0, 1fr); gap: 8px; margin: 0 0 10px; }
+.messages .message-item time { color: #7d8c80; font-size: .66rem; font-variant-numeric: tabular-nums; line-height: 1.55; text-align: right; }
+.messages .message-item p { margin: 0; color: #cbd5cd; font-size: .9rem; line-height: 1.5; }
+.messages .message-item b { display: block; margin-bottom: 2px; color: var(--gold2); font-size: .78rem; }
+.messages .message-item.system p { color: var(--muted); font-style: italic; }
+.messages.timeline { padding-left: 20px; }
+.messages.timeline .message-item { position: relative; margin: 0; padding-bottom: 14px; }
+.messages.timeline .message-item::before { content: ""; position: absolute; left: -12px; top: 4px; bottom: -5px; width: 1px; background: #405342; }
+.messages.timeline .message-item::after { content: ""; position: absolute; left: -16px; top: 4px; width: 7px; height: 7px; border: 2px solid #101811; border-radius: 50%; background: var(--gold); }
+.messages.timeline .message-item:last-of-type::before { bottom: 12px; }
+.messages.timeline .message-item:last-of-type::after { box-shadow: 0 0 0 4px #efbd5726; }
 @media (max-width: 850px) {
   .game-shell { grid-template-rows: auto minmax(240px, 1fr) auto calc(48px + env(safe-area-inset-bottom)); }
   .hand { max-height: none; overflow: hidden; }
@@ -29,6 +45,12 @@
   .action-target-panel > div:first-child { display: flex; align-items: baseline; gap: 7px; flex-basis: auto; }
   .action-target-panel b { font-size: .7rem; }
   .target-strip { width: 100%; }
+  .last-action { max-width: 51vw; font-size: .63rem; }
+  .last-action span { font-size: .55rem; }
+  .messages .message-item { grid-template-columns: 47px minmax(0, 1fr); gap: 6px; }
+  .messages .message-item p { font-size: .8rem; }
+  .messages .message-item b { font-size: .71rem; }
+  .messages .message-item time { font-size: .6rem; }
 }
 @media (max-width: 560px) {
   .hand-head-actions { gap: 4px; }

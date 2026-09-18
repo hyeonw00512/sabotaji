@@ -39,7 +39,7 @@ export class GameEngine {
     const goals = shuffle(['TREASURE', 'ROCK', 'ROCK']);
     const turnIndex = config.startingPlayerPolicy === 'RANDOM_EACH_ROUND' ? randomStartingTurnIndex(active) : 0;
     const startingPlayer = active[turnIndex];
-    this.room.game = { phase: 'PLAYING', round, roleRevealId: id(8), goalReveal: null, turnIndex, startingPlayerId: startingPlayer.id, deck, discardPile: [], board: this.boardEngine.initialBoard(), goals, unusedRoles: shuffledRoles.slice(roleSetup.dealCount), winner: null, result: null, turnStartedAt: Date.now() };
+    this.room.game = { phase: 'PLAYING', round, roleRevealId: id(8), goalReveal: null, lastAction: null, turnIndex, startingPlayerId: startingPlayer.id, deck, discardPile: [], board: this.boardEngine.initialBoard(), goals, unusedRoles: shuffledRoles.slice(roleSetup.dealCount), winner: null, result: null, turnStartedAt: Date.now() };
     this.room.status = 'PLAYING';
     this.log(round === 1 ? `게임을 시작했습니다. ${startingPlayer.nickname} 님이 무작위로 첫 차례가 되었습니다. 비밀 역할을 확인하세요.` : `${round}라운드를 시작했습니다. ${startingPlayer.nickname} 님이 무작위로 첫 차례가 되었습니다. 역할을 다시 확인하세요.`);
   }
@@ -61,7 +61,7 @@ export class GameEngine {
     player.hand.splice(cardIndex, 1);
     this.room.game.board[`${payload.x},${payload.y}`] = { id: card.id, kind: 'PATH', cardKey: card.key, x: payload.x, y: payload.y, rotation: payload.rotation, connections: result.connections, routes: result.routes };
     const treasureFound = this.revealReachableGoals();
-    this.log(`${player.nickname} 님이 터널 카드를 배치했습니다.`);
+    this.recordAction('PLACE_PATH', player, `${player.nickname} 님이 터널 카드를 배치했습니다.`, { x: payload.x, y: payload.y });
     if (treasureFound) this.endRound('MINERS', '진짜 광맥까지 터널을 연결했습니다.', player.id);
     else this.drawAndAdvance(player);
   }
@@ -71,7 +71,7 @@ export class GameEngine {
     const index = player.hand.findIndex(c => c.id === cardId);
     if (index < 0) throw new Error('손패에 없는 카드입니다.');
     this.room.game.discardPile.push(player.hand.splice(index, 1)[0]);
-    this.log(`${player.nickname} 님이 카드를 버렸습니다.`);
+    this.recordAction('DISCARD', player, `${player.nickname} 님이 카드를 버렸습니다.`);
     this.drawAndAdvance(player);
   }
   playAction(playerId, payload) {
@@ -96,11 +96,11 @@ export class GameEngine {
     if (card.action === 'BREAK') {
       if (!target.equipment[equipment]) throw new Error('이미 고장난 장비입니다.');
       target.equipment[equipment] = false;
-      this.log(`${player.nickname} 님이 ${target.nickname} 님의 장비 하나를 고장냈습니다.`);
+      this.recordAction('BREAK', player, `${player.nickname} 님이 ${target.nickname} 님의 ${this.equipmentName(equipment)}을(를) 고장냈습니다.`, { targetPlayerId: target.id, targetNickname: target.nickname, equipment });
     } else {
       if (target.equipment[equipment]) throw new Error('고장나지 않은 장비입니다.');
       target.equipment[equipment] = true;
-      this.log(`${player.nickname} 님이 ${target.nickname} 님의 장비 하나를 수리했습니다.`);
+      this.recordAction('REPAIR', player, `${player.nickname} 님이 ${target.nickname} 님의 ${this.equipmentName(equipment)}을(를) 수리했습니다.`, { targetPlayerId: target.id, targetNickname: target.nickname, equipment });
     }
   }
   removePath(player, payload) {
@@ -109,7 +109,7 @@ export class GameEngine {
     const cell = this.room.game.board[key];
     if (!cell || cell.kind !== 'PATH') throw new Error('제거할 수 있는 터널 카드가 아닙니다.');
     delete this.room.game.board[key];
-    this.log(`${player.nickname} 님이 터널 카드 한 장을 제거했습니다.`);
+    this.recordAction('REMOVE_PATH', player, `${player.nickname} 님이 터널 카드 한 장을 제거했습니다.`, { x: payload.x, y: payload.y });
   }
   peekGoal(player, goalIndex) {
     if (!Number.isInteger(goalIndex) || goalIndex < 0 || goalIndex >= this.room.game.goals.length) throw new Error('확인할 목표가 올바르지 않습니다.');
@@ -118,7 +118,7 @@ export class GameEngine {
     const goalType = this.room.game.goals[goalIndex];
     if (!player.peekedGoals.some(item => item.goalIndex === goalIndex)) player.peekedGoals.push({ goalIndex, goalType });
     player.peekReveal = { id:id(8), goalIndex, goalType };
-    this.log(`${player.nickname} 님이 목표 카드 하나를 확인했습니다.`);
+    this.recordAction('PEEK_GOAL', player, `${player.nickname} 님이 목표 카드 하나를 확인했습니다.`);
   }
   drawAndAdvance(player) {
     const drawn = this.room.game.deck.shift();
@@ -338,6 +338,11 @@ export class GameEngine {
     if (!moves.length) return null;
     moves.sort((left, right) => right.score - left.score || right.x - left.x || left.y - right.y || left.rotation - right.rotation);
     return moves[0];
+  }
+  equipmentName(equipment) { return { PICK: '곡괭이', CART: '수레', LAMP: '등불' }[equipment] || '장비'; }
+  recordAction(type, player, message, details = {}) {
+    this.room.game.lastAction = { id: id(8), type, playerId: player.id, playerNickname: player.nickname, message, at: Date.now(), ...details };
+    this.log(message);
   }
   log(message) { this.room.logs.push({ id: id(5), type: 'SYSTEM', message, at: Date.now() }); this.room.logs = this.room.logs.slice(-100); }
 }
