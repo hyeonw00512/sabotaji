@@ -46,6 +46,7 @@ io.on('connection', socket => {
   safe(socket, 'createRoom', input => { const { room, player } = rooms.create(socket, input); rooms.broadcast(room); return { roomCode:room.id, playerId:player.id, reconnectToken:player.reconnectToken }; });
   safe(socket, 'joinRoom', input => { const { room, player, isSpectator } = rooms.join(socket, input); room.logs.push({ id:id(5), type:'SYSTEM', message:`${player.nickname} 님이 ${isSpectator?'관전자로 ':' '}입장했습니다.`, at:Date.now() }); rooms.broadcast(room); return { roomCode:room.id, playerId:player.id, reconnectToken:player.reconnectToken, isSpectator:Boolean(isSpectator) }; });
   safe(socket, 'reconnectRoom', input => { const { room, player, isSpectator } = rooms.reconnect(socket, input); rooms.broadcast(room); return { roomCode:room.id, playerId:player.id, reconnectToken:player.reconnectToken, isSpectator:Boolean(isSpectator) }; });
+  safe(socket, 'leaveRoom', () => { rooms.leave(socket); return {}; });
   safe(socket, 'playerReady', () => { const { room, player } = rooms.context(socket); if (room.status !== 'LOBBY') throw new Error('로비에서만 준비할 수 있습니다.'); player.ready = !player.ready; rooms.broadcast(room); return {}; });
   safe(socket, 'startGame', () => { const { room, player } = rooms.context(socket); if (room.hostId !== player.id) throw new Error('방장만 시작할 수 있습니다.'); new GameEngine(room).start(); rooms.broadcast(room); return {}; });
   safe(socket, 'playPathCard', payload => { const { room, player } = rooms.context(socket); new GameEngine(room).playPath(player.id, payload); rooms.broadcast(room); return {}; });

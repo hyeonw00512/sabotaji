@@ -124,6 +124,13 @@ export class RoomManager {
     if (room.status === 'PLAYING' && !player.aiControlled && new GameEngine(room).currentPlayer()?.id === player.id) this.scheduleDisconnectedTurn(room, player);
     setTimeout(() => this.expireDisconnectedPlayer(room, player), config.reconnectGraceMs + 100);
   }
+  leave(socket) {
+    const link = this.socketPlayers.get(socket.id);
+    const room = link && this.rooms.get(link.roomId);
+    if (!room) return;
+    socket.leave(room.id);
+    this.disconnect(socket);
+  }
   disconnectKey(room, player) { return `${room.id}:${player.id}`; }
   scheduleDisconnectedTurn(room, player) {
     const key = this.disconnectKey(room, player); clearTimeout(this.disconnectTimers.get(key));

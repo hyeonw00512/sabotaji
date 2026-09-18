@@ -6,7 +6,7 @@ import { ActionIcon } from './ActionIcon.jsx';
 
 const equipmentNames = { PICK: '곡괭이', CART: '수레', LAMP: '등불' };
 
-export function Game({ state, me, isSpectator, soundOn, onSoundToggle, onPlay, onAction, onDiscard, onChooseGold, onSend, onNextRound, onRematch }) {
+export function Game({ state, me, isSpectator, soundOn, onSoundToggle, onPlay, onAction, onDiscard, onChooseGold, onSend, onNextRound, onRematch, onLeave }) {
   const [selected, setSelected] = useState(null);
   const [rotation, setRotation] = useState(0);
   const [mobilePanel, setMobilePanel] = useState(null);
@@ -41,7 +41,7 @@ export function Game({ state, me, isSpectator, soundOn, onSoundToggle, onPlay, o
   const hint = !selectedCard ? '길 카드 또는 아이템 카드를 선택하세요.' : selectedCard.type === 'PATH' ? '초록색 놓기 칸을 클릭해 터널을 배치하세요.' : targetAction ? '대상과 장비를 선택하세요.' : selectedCard.action === 'REMOVE_PATH' ? '제거할 터널 카드를 선택하세요.' : '확인할 숨겨진 목표를 선택하세요.';
 
   return <main className="game-shell">
-    <header className="game-header"><div><span className="eyebrow">라운드 {state.game.round}</span><h1>{isSpectator ? '관전 중' : isGoldDraft ? `${state.players.find(player => player.id === state.game.rewardPlayerId)?.nickname || '플레이어'} 님이 금 조각 선택 중` : isPlaying ? (isTurn ? '내 차례입니다' : `${turnName} 님의 차례`) : '라운드 결과'}</h1>{state.game.lastAction && <p className="last-action" title={state.game.lastAction.message}><span>방금 전</span>{state.game.lastAction.message}</p>}</div><div className="stats"><button className="sound-toggle" onClick={onSoundToggle} aria-label="효과음 켜기 또는 끄기">{soundOn ? '🔊' : '🔇'}</button><span>덱 <b>{state.game.deckCount}</b></span><span>버림 <b>{state.game.discardCount}</b></span><span className="role">{isSpectator ? '관전자' : me.role?.name}</span></div></header>
+    <header className="game-header"><div><span className="eyebrow">라운드 {state.game.round}</span><h1>{isSpectator ? '관전 중' : isGoldDraft ? `${state.players.find(player => player.id === state.game.rewardPlayerId)?.nickname || '플레이어'} 님이 금 조각 선택 중` : isPlaying ? (isTurn ? '내 차례입니다' : `${turnName} 님의 차례`) : '라운드 결과'}</h1>{state.game.lastAction && <p className="last-action" title={state.game.lastAction.message}><span>방금 전</span>{state.game.lastAction.message}</p>}</div><div className="stats"><button className="sound-toggle" onClick={onSoundToggle} aria-label="효과음 켜기 또는 끄기">{soundOn ? '🔊' : '🔇'}</button><span>덱 <b>{state.game.deckCount}</b></span><span>버림 <b>{state.game.discardCount}</b></span><span className="role">{isSpectator ? '관전자' : me.role?.name}</span><button className="danger small" onClick={onLeave}>나가기</button></div></header>
     <div className="game-grid">
       <aside className="players card"><h2>플레이어</h2>{state.players.map(player => <PlayerMini key={player.id} player={player} current={player.id === state.game.turnPlayerId}/>)}<p className="spectator-note">관전자 {state.spectators?.length || 0}명</p></aside>
       <Board state={state} selectedCard={isTurn ? selectedCard : null} rotation={rotation} onPlacePath={(x, y) => finish(onPlay({ cardId: selected, x, y, rotation }))} onRemovePath={(x, y) => finish(onAction({ cardId: selected, x, y }))} onPeekGoal={goalIndex => finish(onAction({ cardId: selected, goalIndex }))}/>

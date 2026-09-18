@@ -62,8 +62,21 @@ export function App() {
     } catch (error) { notify(error.message); playCue('error', soundRef.current); } finally { setBusy(false); }
   };
   const action = (event, payload = {}) => emitAck(event, payload).then(() => true).catch(error => { notify(error.message); playCue('error', soundRef.current); return false; });
+  const leaveRoom = async () => {
+    if (!window.confirm('방에서 나갈까요? 진행 중인 게임은 나가기 후 재접속할 수 없으며, 서버가 기존 이탈 규칙을 적용합니다.')) return;
+    setBusy(true);
+    try {
+      await emitAck('leaveRoom');
+      localStorage.removeItem(storageKey);
+      history.replaceState({}, '', '/');
+      setState(null);
+      setMe({ playerId:null, hand:[], role:null, isSpectator:false });
+      notify('방에서 나왔습니다.');
+      refreshRooms();
+    } catch (error) { notify(error.message); } finally { setBusy(false); }
+  };
   const refreshRooms = () => emitAck('listRooms').then(result => setPublicRooms(result.rooms)).catch(error => notify(error.message));
   const refreshRecords = () => emitAck('getRecords').then(setRecords).catch(error => notify(error.message));
   if (!state) return <><StartScreen busy={busy} initialCode={initialCode} publicRooms={publicRooms} records={records} onRefresh={refreshRooms} onRefreshRecords={refreshRecords} onCreate={payload => enter('createRoom', payload)} onJoin={payload => enter('joinRoom', payload)}/>{toast && <div className="toast">{toast}</div>}</>;
-  return <>{state.status === 'LOBBY' ? <Lobby state={state} me={me} isSpectator={me.isSpectator} onReady={() => action('playerReady')} onStart={() => action('startGame')} onSend={message => action('chatMessage', { message })}/> : <Game state={state} me={me} isSpectator={me.isSpectator} soundOn={soundOn} onSoundToggle={() => setSoundOn(value => !value)} onPlay={payload => action('playPathCard', payload)} onAction={payload => action('playActionCard', payload)} onDiscard={cardId => action('discardCard', { cardId })} onChooseGold={rewardId => action('chooseGold', { rewardId })} onSend={message => action('chatMessage', { message })} onNextRound={() => action('nextRound')} onRematch={() => action('rematch')}/>} {toast && <div className="toast">{toast}</div>}</>;
+  return <>{state.status === 'LOBBY' ? <Lobby state={state} me={me} isSpectator={me.isSpectator} onReady={() => action('playerReady')} onStart={() => action('startGame')} onSend={message => action('chatMessage', { message })} onLeave={leaveRoom}/> : <Game state={state} me={me} isSpectator={me.isSpectator} soundOn={soundOn} onSoundToggle={() => setSoundOn(value => !value)} onPlay={payload => action('playPathCard', payload)} onAction={payload => action('playActionCard', payload)} onDiscard={cardId => action('discardCard', { cardId })} onChooseGold={rewardId => action('chooseGold', { rewardId })} onSend={message => action('chatMessage', { message })} onNextRound={() => action('nextRound')} onRematch={() => action('rematch')} onLeave={leaveRoom}/>} {toast && <div className="toast">{toast}</div>}</>;
 }

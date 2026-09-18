@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { ChatPanel } from './ChatPanel.jsx';
 
-export function Lobby({ state, me, isSpectator, onReady, onStart, onSend }) {
+export function Lobby({ state, me, isSpectator, onReady, onStart, onSend, onLeave }) {
   const invite = `${location.origin}/?room=${state.roomCode}`;
   const [copied, setCopied] = useState(false);
   const copy = async () => {
@@ -16,7 +16,7 @@ export function Lobby({ state, me, isSpectator, onReady, onStart, onSend }) {
   const meInRoom = state.players.find(player => player.id === me.playerId);
 
   return <main className="lobby-shell">
-    <header className="topbar"><div><span className="eyebrow">대기실 · 광산 입구</span><h1>방 코드 <strong>{state.roomCode}</strong></h1></div><button className="secondary small" onClick={copy}>{copied ? '복사됨 ✓' : '초대 링크 복사'}</button></header>
+    <header className="topbar"><div><span className="eyebrow">대기실 · 광산 입구</span><h1>방 코드 <strong>{state.roomCode}</strong></h1></div><div className="topbar-actions"><button className="secondary small" onClick={copy}>{copied ? '복사됨 ✓' : '초대 링크 복사'}</button><button className="danger small" onClick={onLeave}>나가기</button></div></header>
     <section className="lobby-content">
       <div className="roster card">
         <div className="lobby-invite"><span>초대 링크</span><code>{invite}</code><button onClick={copy}>{copied ? '복사됨' : '복사'}</button></div>
