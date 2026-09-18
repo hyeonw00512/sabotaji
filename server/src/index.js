@@ -9,6 +9,7 @@ import config from '../data/gameConfig.json' with { type: 'json' };
 import { RoomManager } from './game/RoomManager.js';
 import { GameEngine } from './game/GameEngine.js';
 import { cleanText, id } from './utils.js';
+import { createSabotajiPlatformBridge } from './platform-bridge.js';
 
 const allowedOrigins = process.env.CLIENT_ORIGIN ? process.env.CLIENT_ORIGIN.split(',').map(origin => origin.trim()).filter(Boolean) : true;
 const corsOptions = { origin: allowedOrigins, credentials: true };
@@ -22,7 +23,9 @@ if (fs.existsSync(clientDist)) {
 const server = http.createServer(app);
 const io = new Server(server, { maxHttpBufferSize: 100_000, cors: corsOptions });
 const rooms = new RoomManager(io);
+const platformBridge = createSabotajiPlatformBridge(rooms, process.env.PUBLIC_APP_URL || 'https://sabotaji.onrender.com');
 app.get('/api/records', (_, res) => res.json(rooms.records()));
+app.get('/api/platform/rooms', (_, res) => res.json(platformBridge.publicState()));
 const safe = (socket, event, fn) => socket.on(event, async (payload = {}, ack = () => {}) => {
   try {
     if (!payload || Array.isArray(payload) || typeof payload !== 'object') throw new Error('요청 형식이 올바르지 않습니다.');
