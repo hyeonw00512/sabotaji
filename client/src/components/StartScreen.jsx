@@ -35,7 +35,7 @@ export function StartScreen({ onCreate, onJoin, onRefresh, onRefreshRecords, pub
   const [password, setPassword] = useState('');
   const [asSpectator, setAsSpectator] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
-  const [settings, setSettings] = useState({ maxPlayers:8, rounds:3, turnSeconds:0, isPublic:false, actionCards:true, specialRules:false, aiReplacement:true });
+  const [settings, setSettings] = useState({ maxPlayers:8, rounds:3, turnSeconds:0, isPublic:true, actionCards:true, specialRules:false, aiReplacement:true });
   const inviteMode = useMemo(() => Boolean(initialCode), [initialCode]);
   const parsedCode = useMemo(() => extractRoomCode(code), [code]);
   const go = fn => { localStorage.setItem('mine:nickname', nickname.trim()); fn({ nickname, roomCode:parsedCode, password, asSpectator, settings }); };

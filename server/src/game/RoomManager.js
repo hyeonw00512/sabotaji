@@ -64,7 +64,7 @@ export class RoomManager {
   settings(input = {}) {
     const d = config.roomDefaults;
     if (input.specialRules) throw new Error('특수 규칙은 아직 구현되지 않았습니다. 기본 규칙으로 방을 만들어 주세요.');
-    return { maxPlayers: Math.min(config.maxPlayers, Math.max(config.minPlayers, Number(input.maxPlayers) || d.maxPlayers)), rounds: [1,3,5].includes(Number(input.rounds)) ? Number(input.rounds) : d.rounds, turnSeconds: [0,30,45,60,90].includes(Number(input.turnSeconds)) ? Number(input.turnSeconds) : d.turnSeconds, isPublic: Boolean(input.isPublic), actionCards: input.actionCards !== false, specialRules: Boolean(input.specialRules), aiReplacement: input.aiReplacement !== false };
+    return { maxPlayers: Math.min(config.maxPlayers, Math.max(config.minPlayers, Number(input.maxPlayers) || d.maxPlayers)), rounds: [1,3,5].includes(Number(input.rounds)) ? Number(input.rounds) : d.rounds, turnSeconds: [0,30,45,60,90].includes(Number(input.turnSeconds)) ? Number(input.turnSeconds) : d.turnSeconds, isPublic: input.isPublic !== false, actionCards: input.actionCards !== false, specialRules: Boolean(input.specialRules), aiReplacement: input.aiReplacement !== false };
   }
   hashPassword(value) {
     const password = cleanText(value, 50);
