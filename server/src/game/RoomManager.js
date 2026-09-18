@@ -54,7 +54,7 @@ export class RoomManager {
   newPlayer(socket, nickname) {
     const name = cleanText(nickname, 20);
     if (name.length < 1) throw new Error('닉네임을 입력하세요.');
-    return { id: id(), reconnectToken: id(24), socketId: socket.id, nickname: name, connected: true, ready: false, role: null, hand: [], equipment: { PICK: true, CART: true, LAMP: true }, peekedGoals: [], score: 0, forfeited: false, aiControlled: false };
+    return { id: id(), reconnectToken: id(24), socketId: socket.id, nickname: name, connected: true, ready: false, role: null, hand: [], equipment: { PICK: true, CART: true, LAMP: true }, peekedGoals: [], peekReveal: null, score: 0, forfeited: false, aiControlled: false };
   }
   newSpectator(socket, nickname) {
     const name = cleanText(nickname, 20);
@@ -93,7 +93,7 @@ export class RoomManager {
     const room = maybePlayer ? roomOrPlayer : null;
     const player = maybePlayer || roomOrPlayer;
     const draft = room?.game?.phase === 'GOLD_DRAFT' && room.game.goldDraft.order[room.game.goldDraft.index] === player.id ? { options: room.game.goldDraft.options.map(option => ({ id:option.id, value:option.value })) } : null;
-    return { playerId:player.id, reconnectToken:player.reconnectToken, role: player.role ? roles.roles[player.role] : null, roleRevealId:room?.game?.roleRevealId || null, hand:player.hand, peekedGoals:player.peekedGoals, aiControlled:Boolean(player.aiControlled), goldDraft:draft };
+    return { playerId:player.id, reconnectToken:player.reconnectToken, role: player.role ? roles.roles[player.role] : null, roleRevealId:room?.game?.roleRevealId || null, hand:player.hand, peekedGoals:player.peekedGoals, peekReveal:player.peekReveal || null, aiControlled:Boolean(player.aiControlled), goldDraft:draft };
   }
   records() { return this.recordStore.summary(); }
   broadcast(room) { if (room.game?.phase === 'GAME_END' && !room.game.recordedAt) { this.recordStore.recordGame(room); room.game.recordedAt = Date.now(); } room.updatedAt = Date.now(); this.persist(); this.io.to(room.id).emit('gameState', this.publicState(room)); for (const p of room.players) if (p.connected) this.io.to(p.socketId).emit('privateState', this.privateState(room, p)); this.io.emit('roomList', this.listPublicRooms()); this.scheduleTimer(room); }

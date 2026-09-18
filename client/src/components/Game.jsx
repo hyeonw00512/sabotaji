@@ -12,6 +12,7 @@ export function Game({ state, me, isSpectator, soundOn, onSoundToggle, onPlay, o
   const [mobilePanel, setMobilePanel] = useState(null);
   const [dismissedRoleRevealId, setDismissedRoleRevealId] = useState(null);
   const [dismissedGoalRevealId, setDismissedGoalRevealId] = useState(null);
+  const [dismissedPeekRevealId, setDismissedPeekRevealId] = useState(null);
   const [roleReviewOpen, setRoleReviewOpen] = useState(false);
   const isPlaying = state.game.phase === 'PLAYING';
   const isGoldDraft = state.game.phase === 'GOLD_DRAFT';
@@ -22,6 +23,9 @@ export function Game({ state, me, isSpectator, soundOn, onSoundToggle, onPlay, o
   const showRoleReveal = !isSpectator && Boolean(me.role) && (roleReviewOpen || (isPlaying && me.roleRevealId === state.game.roleRevealId && dismissedRoleRevealId !== state.game.roleRevealId));
   const goalReveal = state.game.goalReveal;
   const showGoalReveal = Boolean(goalReveal?.id) && dismissedGoalRevealId !== goalReveal.id;
+  const peekReveal = me.peekReveal;
+  const showPeekReveal = !isSpectator && Boolean(peekReveal?.id) && dismissedPeekRevealId !== peekReveal.id;
+  useEffect(() => { document.body.classList.add('game-active'); return () => document.body.classList.remove('game-active'); }, []);
   useEffect(() => { if (!me.hand.some(card => card.id === selected)) setSelected(null); }, [me.hand, selected]);
   const finish = promise => promise.then(ok => { if (ok) setSelected(null); });
   const choose = card => { setSelected(card.id === selected ? null : card.id); setRotation(0); };
@@ -44,6 +48,7 @@ export function Game({ state, me, isSpectator, soundOn, onSoundToggle, onPlay, o
     {mobilePanel && <div className="mobile-sheet">{mobilePanel === 'chat' ? <ChatPanel state={state} onSend={onSend}/> : <div className="mobile-roster">{state.players.map(player => <PlayerMini key={player.id} player={player} current={player.id === state.game.turnPlayerId}/>)}</div>}<button className="sheet-close" onClick={() => setMobilePanel(null)}>닫기</button></div>}
     {showRoleReveal && <RoleReveal role={me.role} round={state.game.round} onConfirm={() => { setDismissedRoleRevealId(state.game.roleRevealId); setRoleReviewOpen(false); }}/>}
     {!showRoleReveal && showGoalReveal && <GoalReveal goal={goalReveal} onConfirm={() => setDismissedGoalRevealId(goalReveal.id)}/>}
+    {!showRoleReveal && !showGoalReveal && showPeekReveal && <PeekReveal goal={peekReveal} onConfirm={() => setDismissedPeekRevealId(peekReveal.id)}/>}
     {isGoldDraft && <GoldDraft mine={Boolean(me.goldDraft)} options={me.goldDraft?.options || []} onChoose={onChooseGold}/>} 
     {!isPlaying && !isGoldDraft && <RoundResult result={state.game.result} host={state.hostId === me.playerId} final={state.game.phase === 'GAME_END'} onNextRound={onNextRound} onRematch={onRematch}/>} 
   </main>;
@@ -57,6 +62,11 @@ function RoleReveal({ role, round, onConfirm }) {
 function GoalReveal({ goal, onConfirm }) {
   const treasure = goal.goalType === 'TREASURE';
   return <div className="role-reveal-overlay goal-reveal-overlay" role="dialog" aria-modal="true" aria-labelledby="goal-reveal-title"><section className={`role-reveal-card goal-reveal-card ${treasure ? 'miner' : 'saboteur'}`}><span className="eyebrow">목표 카드 공개</span><div className="role-emblem" aria-hidden="true">{treasure ? '◆' : '×'}</div><h2 id="goal-reveal-title">{treasure ? '광맥을 발견했습니다!' : '꽝! 빈 암석입니다'}</h2><p>{treasure ? '진짜 광맥이 공개되었습니다. 탐사대가 보상을 선택합니다.' : '목표 카드를 뒤집어 모두에게 공개했습니다. 다른 목표를 향해 계속 탐사하세요.'}</p><button className="primary" onClick={onConfirm}>확인</button></section></div>;
+}
+
+function PeekReveal({ goal, onConfirm }) {
+  const treasure = goal.goalType === 'TREASURE';
+  return <div className="role-reveal-overlay peek-reveal-overlay" role="dialog" aria-modal="true" aria-labelledby="peek-reveal-title"><section className={`role-reveal-card peek-reveal-card ${treasure ? 'miner' : 'saboteur'}`}><span className="eyebrow">비밀 지도 확인</span><div className="flip-card" aria-hidden="true"><div className="flip-card-inner"><div className="flip-card-face flip-card-front">?</div><div className="flip-card-face flip-card-back">{treasure ? '◆' : '×'}</div></div></div><h2 id="peek-reveal-title">{treasure ? '진짜 광맥입니다' : '꽝! 빈 암석입니다'}</h2><p>이 결과는 당신만 확인했습니다. 다른 탐사대원에게는 공개되지 않습니다.</p><button className="primary" onClick={onConfirm}>확인</button></section></div>;
 }
 
 function GoldDraft({ mine, options, onChoose }) {

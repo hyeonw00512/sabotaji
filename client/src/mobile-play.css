@@ -1,0 +1,49 @@
+/* Mobile play uses bounded board and hand regions instead of a scaled desktop grid. */
+@media (max-width: 850px) {
+  body.game-active { overflow: hidden; }
+  .game-shell { height: 100dvh; min-height: 100svh; grid-template-rows: minmax(58px, auto) minmax(190px, 1fr) minmax(132px, 34dvh) calc(50px + env(safe-area-inset-bottom)); }
+  .game-header { min-height: 58px; padding: max(7px, env(safe-area-inset-top)) 10px 7px; }
+  .game-header h1 { font-size: .94rem; }
+  .game-header .eyebrow { font-size: .62rem; }
+  .stats { gap: 4px; }
+  .stats > span { padding: 5px 7px; font-size: .68rem; }
+  .sound-toggle { min-width: 34px; min-height: 34px; }
+  .board-frame { min-height: 0; }
+  .board { --board-cell-size: 54px; gap: 5px; }
+  .hand { height: 100%; max-height: none; min-height: 0; overflow-y: auto; overflow-x: hidden; padding: 7px 9px 5px; overscroll-behavior: contain; }
+  .hand-head { position: sticky; top: -7px; z-index: 5; min-height: 31px; padding-top: 7px; background: #111914; align-items: center; }
+  .hand-head b { max-width: 52vw; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: .73rem; }
+  .hand-head-actions { gap: 4px; }
+  .card-actions button { min-height: 32px; padding: 6px 8px; font-size: .69rem; }
+  .cards { min-height: 0; padding: 7px 1px 8px; gap: 7px; }
+  .hand-card { flex-basis: 72px; min-height: 96px; padding: 5px; }
+  .hand-card > div { height: 57px; }
+  .hand-card b { display: block; overflow: hidden; font-size: .64rem; text-overflow: ellipsis; white-space: nowrap; }
+  .hand-card small { display: none; }
+  .action-target-panel { position: relative; z-index: 4; margin: 5px 0; padding: 7px; }
+  .action-target-panel > div:first-child { width: 100%; }
+  .target-strip { padding-bottom: 3px; }
+  .target-strip button { min-height: 34px; padding: 7px 8px; font-size: .68rem; }
+  .peek-results { margin: 4px 0; padding: 6px; font-size: .68rem; }
+  .mobile-dock { min-height: 50px; padding: 6px max(9px, env(safe-area-inset-left)) calc(6px + env(safe-area-inset-bottom)) max(9px, env(safe-area-inset-right)); }
+  .mobile-dock button { min-height: 36px; padding: 6px 10px; }
+  .mobile-sheet { inset: max(64px, calc(env(safe-area-inset-top) + 56px)) 7px calc(58px + env(safe-area-inset-bottom)); border-radius: 14px; }
+}
+@media (max-width: 520px) {
+  .game-shell { grid-template-rows: minmax(54px, auto) minmax(175px, 1fr) minmax(126px, 36dvh) calc(48px + env(safe-area-inset-bottom)); }
+  .stats > span:nth-of-type(1), .stats > span:nth-of-type(2) { display: none; }
+  .board { --board-cell-size: 47px; gap: 4px; }
+  .board-guide { top: 6px; }
+  .hand-head b { max-width: 43vw; }
+  .hand-role { min-height: 32px; padding: 5px 6px; }
+  .mobile-dock button { font-size: .72rem; }
+}
+@media (max-height: 560px) and (orientation: landscape) {
+  .game-shell { grid-template-rows: 48px minmax(135px, 1fr) 104px calc(42px + env(safe-area-inset-bottom)); }
+  .board { --board-cell-size: 42px; }
+  .hand { padding-top: 3px; }
+  .hand-head { top: -3px; min-height: 23px; padding-top: 3px; }
+  .hand-card { flex-basis: 60px; min-height: 70px; }
+  .hand-card > div { height: 42px; }
+  .cards { padding-top: 3px; }
+}

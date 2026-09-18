@@ -28,7 +28,7 @@ export class GameEngine {
     const roleSetup = rolesData.distribution[String(active.length)];
     const shuffledRoles = shuffle(Object.entries(roleSetup.pool).flatMap(([role, count]) => Array(count).fill(role)));
     const dealtRoles = shuffledRoles.slice(0, roleSetup.dealCount);
-    shuffle(active).forEach((player, index) => { player.forfeited = false; player.aiControlled = !player.connected; player.role = dealtRoles[index]; player.equipment = { PICK: true, CART: true, LAMP: true }; player.peekedGoals = []; player.hand = []; });
+    shuffle(active).forEach((player, index) => { player.forfeited = false; player.aiControlled = !player.connected; player.role = dealtRoles[index]; player.equipment = { PICK: true, CART: true, LAMP: true }; player.peekedGoals = []; player.peekReveal = null; player.hand = []; });
     validatePathCardDefinitions(pathsData.cards);
     const pathDeck = pathsData.cards.flatMap(def => Array.from({ length: def.count }, () => ({ id: id(6), type: 'PATH', ...def, count: undefined })));
     const actionDeck = this.room.settings.actionCards ? actionsData.cards.flatMap(def => Array.from({ length: def.count }, () => ({ id: id(6), ...def, count: undefined }))) : [];
@@ -115,7 +115,9 @@ export class GameEngine {
     if (!Number.isInteger(goalIndex) || goalIndex < 0 || goalIndex >= this.room.game.goals.length) throw new Error('확인할 목표가 올바르지 않습니다.');
     const goal = Object.values(this.room.game.board).find(cell => cell.kind === 'GOAL' && cell.goalIndex === goalIndex);
     if (!goal || goal.revealed) throw new Error('이미 공개되었거나 존재하지 않는 목표입니다.');
-    if (!player.peekedGoals.some(item => item.goalIndex === goalIndex)) player.peekedGoals.push({ goalIndex, goalType: this.room.game.goals[goalIndex] });
+    const goalType = this.room.game.goals[goalIndex];
+    if (!player.peekedGoals.some(item => item.goalIndex === goalIndex)) player.peekedGoals.push({ goalIndex, goalType });
+    player.peekReveal = { id:id(8), goalIndex, goalType };
     this.log(`${player.nickname} 님이 목표 카드 하나를 확인했습니다.`);
   }
   drawAndAdvance(player) {
@@ -244,7 +246,7 @@ export class GameEngine {
   rematch() {
     if (this.room.game?.phase !== 'GAME_END') throw new Error('게임이 끝난 뒤에만 재경기를 할 수 있습니다.');
     this.room.status = 'LOBBY';
-    this.room.players.forEach(player => { player.ready = player.id === this.room.hostId; player.role = null; player.hand = []; player.peekedGoals = []; player.equipment = { PICK: true, CART: true, LAMP: true }; player.score = 0; player.rewards = []; player.forfeited = false; player.aiControlled = false; });
+    this.room.players.forEach(player => { player.ready = player.id === this.room.hostId; player.role = null; player.hand = []; player.peekedGoals = []; player.peekReveal = null; player.equipment = { PICK: true, CART: true, LAMP: true }; player.score = 0; player.rewards = []; player.forfeited = false; player.aiControlled = false; });
     this.room.game = null; this.room.match = null;
     this.log('재경기 대기실로 돌아왔습니다.');
   }
