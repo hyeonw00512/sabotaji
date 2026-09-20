@@ -6,6 +6,7 @@ import { Game } from './components/Game.jsx';
 import { isSoundEnabled, playCue, setSoundEnabled } from './sound.js';
 
 const storageKey = 'mine:session';
+const platformJoinToken = new URLSearchParams(location.search).get('joinToken');
 const cueFromLog = message => /배치/.test(message) ? 'place' : /고장|수리|제거/.test(message) ? 'action' : /공개/.test(message) ? 'reveal' : /승리/.test(message) ? 'victory' : null;
 const readSession = () => {
   try {
@@ -26,6 +27,7 @@ export function App() {
   const [records, setRecords] = useState({ totalGames:0, leaderboard:[], recentGames:[] });
   const [soundOn, setSoundOn] = useState(isSoundEnabled);
   const soundRef = useRef(soundOn);
+  const platformJoinAttempted = useRef(false);
   const lastLogId = useRef(null);
   const initialCode = new URLSearchParams(location.search).get('room')?.toUpperCase() || '';
   useEffect(() => { soundRef.current = soundOn; setSoundEnabled(soundOn); }, [soundOn]);
@@ -45,6 +47,7 @@ export function App() {
     const reconnect = () => {
       const saved = readSession();
       if (saved) emitAck('reconnectRoom', saved).then(result => { if (result.isSpectator) setMe({ playerId:null, hand:[], role:null, isSpectator:true }); }).catch(() => localStorage.removeItem(storageKey));
+      else if (platformJoinToken && !platformJoinAttempted.current) { platformJoinAttempted.current = true; enter('platformJoin', { joinToken: platformJoinToken }); }
     };
     const connected = () => { reconnect(); refreshRooms(); refreshRecords(); };
     socket.on('gameState', game); socket.on('privateState', priv); socket.on('gameError', error); socket.on('roomList', roomList); socket.on('connect', connected);

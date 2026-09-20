@@ -1,6 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import http from 'node:http';
+import { createHmac, timingSafeEqual } from 'node:crypto';
 import path from 'node:path';
 import fs from 'node:fs';
 import { fileURLToPath } from 'node:url';
@@ -39,12 +40,27 @@ const safe = (socket, event, fn) => socket.on(event, async (payload = {}, ack = 
     const result = await fn(payload); ack({ ok: true, ...result });
   } catch (error) { const message = error instanceof Error ? error.message : '요청 처리 중 오류가 발생했습니다.'; ack({ ok: false, error: message }); socket.emit('gameError', message); }
 });
+const verifyPlatformJoinToken = token => {
+  const secret = process.env.PLATFORM_JOIN_SECRET;
+  if (!secret) throw new Error('플랫폼 자동 입장이 아직 설정되지 않았습니다.');
+  const [body, signature] = String(token || '').split('.');
+  if (!body || !signature) throw new Error('자동 입장 정보가 올바르지 않습니다.');
+  const expected = createHmac('sha256', secret).update(body).digest('base64url');
+  const received = Buffer.from(signature), valid = Buffer.from(expected);
+  if (received.length !== valid.length || !timingSafeEqual(received, valid)) throw new Error('자동 입장 정보가 만료되었거나 올바르지 않습니다.');
+  let payload;
+  try { payload = JSON.parse(Buffer.from(body, 'base64url').toString('utf8')); }
+  catch { throw new Error('자동 입장 정보를 읽을 수 없습니다.'); }
+  if (payload.gameId !== 'sabotaji' || !payload.roomCode || !payload.nickname || Number(payload.exp) * 1000 <= Date.now()) throw new Error('자동 입장 정보가 만료되었거나 다른 게임용입니다.');
+  return payload;
+};
 
 io.on('connection', socket => {
   safe(socket, 'listRooms', () => ({ rooms: rooms.listPublicRooms() }));
   safe(socket, 'getRecords', () => rooms.records());
   safe(socket, 'createRoom', input => { const { room, player } = rooms.create(socket, input); rooms.broadcast(room); return { roomCode:room.id, playerId:player.id, reconnectToken:player.reconnectToken }; });
   safe(socket, 'joinRoom', input => { const { room, player, isSpectator } = rooms.join(socket, input); room.logs.push({ id:id(5), type:'SYSTEM', message:`${player.nickname} 님이 ${isSpectator?'관전자로 ':' '}입장했습니다.`, at:Date.now() }); rooms.broadcast(room); return { roomCode:room.id, playerId:player.id, reconnectToken:player.reconnectToken, isSpectator:Boolean(isSpectator) }; });
+  safe(socket, 'platformJoin', ({ joinToken }) => { const payload = verifyPlatformJoinToken(joinToken); const { room, player, isSpectator } = rooms.join(socket, { roomCode:payload.roomCode, nickname:payload.nickname, asSpectator:payload.mode === 'SPECTATOR' }); room.logs.push({ id:id(5), type:'SYSTEM', message:`${player.nickname} 님이 ${isSpectator?'관전자로 ':' '}플랫폼에서 입장했습니다.`, at:Date.now() }); rooms.broadcast(room); return { roomCode:room.id, playerId:player.id, reconnectToken:player.reconnectToken, isSpectator:Boolean(isSpectator) }; });
   safe(socket, 'reconnectRoom', input => { const { room, player, isSpectator } = rooms.reconnect(socket, input); rooms.broadcast(room); return { roomCode:room.id, playerId:player.id, reconnectToken:player.reconnectToken, isSpectator:Boolean(isSpectator) }; });
   safe(socket, 'leaveRoom', () => { rooms.leave(socket); return {}; });
   safe(socket, 'playerReady', () => { const { room, player } = rooms.context(socket); if (room.status !== 'LOBBY') throw new Error('로비에서만 준비할 수 있습니다.'); player.ready = !player.ready; rooms.broadcast(room); return {}; });
