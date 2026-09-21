@@ -7,6 +7,7 @@ import { isSoundEnabled, playCue, setSoundEnabled } from './sound.js';
 
 const storageKey = 'mine:session';
 const platformJoinToken = new URLSearchParams(location.search).get('joinToken');
+const platformHomeUrl = () => new URLSearchParams(location.search).get('platformUrl') || import.meta.env.VITE_PLATFORM_URL || document.referrer || '/';
 const cueFromLog = message => /배치/.test(message) ? 'place' : /고장|수리|제거/.test(message) ? 'action' : /공개/.test(message) ? 'reveal' : /승리/.test(message) ? 'victory' : null;
 const readSession = () => {
   try {
@@ -80,6 +81,7 @@ export function App() {
   };
   const refreshRooms = () => emitAck('listRooms').then(result => setPublicRooms(result.rooms)).catch(error => notify(error.message));
   const refreshRecords = () => emitAck('getRecords').then(setRecords).catch(error => notify(error.message));
+  const returnToPlatform = () => window.location.assign(platformHomeUrl());
   if (!state) return <><StartScreen busy={busy} initialCode={initialCode} publicRooms={publicRooms} records={records} onRefresh={refreshRooms} onRefreshRecords={refreshRecords} onCreate={payload => enter('createRoom', payload)} onJoin={payload => enter('joinRoom', payload)}/>{toast && <div className="toast">{toast}</div>}</>;
-  return <>{state.status === 'LOBBY' ? <Lobby state={state} me={me} isSpectator={me.isSpectator} onReady={() => action('playerReady')} onStart={() => action('startGame')} onSend={message => action('chatMessage', { message })} onLeave={leaveRoom}/> : <Game state={state} me={me} isSpectator={me.isSpectator} soundOn={soundOn} onSoundToggle={() => setSoundOn(value => !value)} onPlay={payload => action('playPathCard', payload)} onAction={payload => action('playActionCard', payload)} onDiscard={cardId => action('discardCard', { cardId })} onChooseGold={rewardId => action('chooseGold', { rewardId })} onSend={message => action('chatMessage', { message })} onNextRound={() => action('nextRound')} onRematch={() => action('rematch')} onLeave={leaveRoom}/>} {toast && <div className="toast">{toast}</div>}</>;
+  return <>{state.status === 'LOBBY' ? <Lobby state={state} me={me} isSpectator={me.isSpectator} onReady={() => action('playerReady')} onStart={() => action('startGame')} onSend={message => action('chatMessage', { message })} onLeave={leaveRoom} onPlatform={returnToPlatform}/> : <Game state={state} me={me} isSpectator={me.isSpectator} soundOn={soundOn} onSoundToggle={() => setSoundOn(value => !value)} onPlay={payload => action('playPathCard', payload)} onAction={payload => action('playActionCard', payload)} onDiscard={cardId => action('discardCard', { cardId })} onChooseGold={rewardId => action('chooseGold', { rewardId })} onSend={message => action('chatMessage', { message })} onNextRound={() => action('nextRound')} onRematch={() => action('rematch')} onLeave={leaveRoom} onPlatform={returnToPlatform}/>} {toast && <div className="toast">{toast}</div>}</>;
 }
