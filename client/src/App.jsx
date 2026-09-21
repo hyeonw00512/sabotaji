@@ -10,8 +10,8 @@ const platformJoinToken = new URLSearchParams(location.search).get('joinToken');
 const platformHomeUrl = () => new URLSearchParams(location.search).get('platformUrl') || import.meta.env.VITE_PLATFORM_URL || document.referrer || '/';
 const platformActivityToken = new URLSearchParams(location.search).get('platformActivityToken');
 let lastPlatformActivity = '';
-const reportPlatformActivity = status => {
-  if (!platformActivityToken || lastPlatformActivity === status) return;
+const reportPlatformActivity = (status, force = false) => {
+  if (!platformActivityToken || (!force && lastPlatformActivity === status)) return;
   lastPlatformActivity = status;
   let endpoint;
   try { endpoint = new URL('/api/activity', platformHomeUrl()).toString(); } catch { return; }
@@ -41,7 +41,12 @@ export function App() {
   const lastLogId = useRef(null);
   const initialCode = new URLSearchParams(location.search).get('room')?.toUpperCase() || '';
   useEffect(() => { soundRef.current = soundOn; setSoundEnabled(soundOn); }, [soundOn]);
-  useEffect(() => { reportPlatformActivity(!state || state.status === 'LOBBY' ? 'LOBBY' : me.isSpectator ? 'SPECTATING' : 'PLAYING'); }, [state?.status, me.isSpectator]);
+  useEffect(() => {
+    const status = !state || state.status === 'LOBBY' ? 'LOBBY' : me.isSpectator ? 'SPECTATING' : 'PLAYING';
+    reportPlatformActivity(status);
+    const timer = window.setInterval(() => reportPlatformActivity(status, true), 45_000);
+    return () => window.clearInterval(timer);
+  }, [state?.status, me.isSpectator]);
   const notify = message => { setToast(message); setTimeout(() => setToast(''), 2800); };
 
   useEffect(() => {
