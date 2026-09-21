@@ -129,6 +129,12 @@ export class RoomManager {
     const room = link && this.rooms.get(link.roomId);
     if (!room) return;
     socket.leave(room.id);
+    if (link.type !== 'SPECTATOR' && room.players.length === 1 && room.players[0].id === link.playerId) {
+      this.socketPlayers.delete(socket.id);
+      this.rooms.delete(room.id);
+      this.persist();
+      return;
+    }
     this.disconnect(socket);
   }
   disconnectKey(room, player) { return `${room.id}:${player.id}`; }
