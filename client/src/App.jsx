@@ -46,8 +46,8 @@ export function App() {
     const refreshRooms = () => emitAck('listRooms').then(result => setPublicRooms(result.rooms)).catch(() => {});
     const reconnect = () => {
       const saved = readSession();
-      if (saved) emitAck('reconnectRoom', saved).then(result => { if (result.isSpectator) setMe({ playerId:null, hand:[], role:null, isSpectator:true }); }).catch(() => localStorage.removeItem(storageKey));
-      else if (platformJoinToken && !platformJoinAttempted.current) { platformJoinAttempted.current = true; enter('platformJoin', { joinToken: platformJoinToken }); }
+      if (platformJoinToken && !platformJoinAttempted.current) { platformJoinAttempted.current = true; localStorage.removeItem(storageKey); enter('platformJoin', { joinToken: platformJoinToken }); }
+      else if (saved) emitAck('reconnectRoom', saved).then(result => { if (result.isSpectator) setMe({ playerId:null, hand:[], role:null, isSpectator:true }); }).catch(() => localStorage.removeItem(storageKey));
     };
     const connected = () => { reconnect(); refreshRooms(); refreshRecords(); };
     socket.on('gameState', game); socket.on('privateState', priv); socket.on('gameError', error); socket.on('roomList', roomList); socket.on('connect', connected);
