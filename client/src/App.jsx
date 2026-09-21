@@ -8,6 +8,15 @@ import { isSoundEnabled, playCue, setSoundEnabled } from './sound.js';
 const storageKey = 'mine:session';
 const platformJoinToken = new URLSearchParams(location.search).get('joinToken');
 const platformHomeUrl = () => new URLSearchParams(location.search).get('platformUrl') || import.meta.env.VITE_PLATFORM_URL || document.referrer || '/';
+const platformActivityToken = new URLSearchParams(location.search).get('platformActivityToken');
+let lastPlatformActivity = '';
+const reportPlatformActivity = status => {
+  if (!platformActivityToken || lastPlatformActivity === status) return;
+  lastPlatformActivity = status;
+  let endpoint;
+  try { endpoint = new URL('/api/activity', platformHomeUrl()).toString(); } catch { return; }
+  fetch(endpoint, { method:'POST', headers:{'content-type':'application/json'}, body:JSON.stringify({ token:platformActivityToken, status }), keepalive:true }).catch(() => { lastPlatformActivity = ''; });
+};
 const cueFromLog = message => /배치/.test(message) ? 'place' : /고장|수리|제거/.test(message) ? 'action' : /공개/.test(message) ? 'reveal' : /승리/.test(message) ? 'victory' : null;
 const readSession = () => {
   try {
@@ -32,6 +41,7 @@ export function App() {
   const lastLogId = useRef(null);
   const initialCode = new URLSearchParams(location.search).get('room')?.toUpperCase() || '';
   useEffect(() => { soundRef.current = soundOn; setSoundEnabled(soundOn); }, [soundOn]);
+  useEffect(() => { reportPlatformActivity(!state || state.status === 'LOBBY' ? 'LOBBY' : me.isSpectator ? 'SPECTATING' : 'PLAYING'); }, [state?.status, me.isSpectator]);
   const notify = message => { setToast(message); setTimeout(() => setToast(''), 2800); };
 
   useEffect(() => {
