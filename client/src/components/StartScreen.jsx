@@ -30,7 +30,7 @@ function MineEmblem() {
   </svg>;
 }
 
-export function StartScreen({ onCreate, onJoin, onRefresh, onRefreshRecords, publicRooms = [], records = [], busy, initialCode='' }) {
+export function StartScreen({ onCreate, onJoin, onRefresh, onRefreshRecords, onPlatform, publicRooms = [], records = [], busy, initialCode='' }) {
   const [nickname, setNickname] = useState(platformNickname || localStorage.getItem('mine:nickname') || '');
   const [code, setCode] = useState(initialCode);
   const [password, setPassword] = useState('');
@@ -55,6 +55,7 @@ export function StartScreen({ onCreate, onJoin, onRefresh, onRefreshRecords, pub
       <InAppBrowserNotice />
       {inviteMode && <div className="invite-banner"><span className="invite-banner-icon">✦</span><div><b>초대받은 탐사대</b><p><strong>{initialCode}</strong> 방에 참가합니다</p></div></div>}
       {!inviteMode && <div className="entry-heading"><span>광산 입구</span><h2>탐사를 시작하세요</h2><p>방을 만들거나 받은 초대 코드로 합류할 수 있습니다.</p></div>}
+      {new URLSearchParams(location.search).get('platformUrl') && <button className="setting-link" type="button" onClick={onPlatform}>플랫폼으로 돌아가기</button>}
       {!platformNickname && <label>닉네임<input value={nickname} maxLength={20} onChange={event => setNickname(event.target.value)} placeholder="게임에서 사용할 이름"/></label>}
       {!inviteMode && <>
         <button className="setting-link" onClick={() => setShowSettings(value => !value)}>방 설정 {showSettings ? '접기' : '열기'}</button>
