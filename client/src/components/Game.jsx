@@ -6,7 +6,7 @@ import { ActionIcon } from './ActionIcon.jsx';
 
 const equipmentNames = { PICK: '곡괭이', CART: '수레', LAMP: '등불' };
 
-export function Game({ state, me, isSpectator, soundOn, onSoundToggle, onPlay, onAction, onDiscard, onChooseGold, onSend, onNextRound, onRematch, onLeave, onPlatform }) {
+export function Game({ state, me, isSpectator, soundOn, onSoundToggle, onPlay, onAction, onDiscard, onChooseGold, onSend, onNextRound, onRematch, onLeave }) {
   const [selected, setSelected] = useState(null);
   const [rotation, setRotation] = useState(0);
   const [mobilePanel, setMobilePanel] = useState(null);
