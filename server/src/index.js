@@ -18,7 +18,15 @@ const app = express(); app.use(cors(corsOptions)); app.use(express.json({ limit:
 app.get('/api/health', (_, res) => res.json({ ok: true, now: Date.now(), uptimeSeconds: Math.floor(process.uptime()) }));
 const clientDist = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../client/dist');
 if (fs.existsSync(clientDist)) {
-  app.use(express.static(clientDist));
+  app.use(express.static(clientDist, {
+    setHeaders(res, filePath) {
+      if (filePath.includes(`${path.sep}assets${path.sep}`)) {
+        res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+      } else if (path.basename(filePath) === 'index.html') {
+        res.setHeader('Cache-Control', 'no-cache');
+      }
+    }
+  }));
 }
 const server = http.createServer(app);
 const io = new Server(server, { maxHttpBufferSize: 100_000, cors: corsOptions });
@@ -29,7 +37,7 @@ app.get('/api/platform/rooms', (_, res) => res.json(platformBridge.publicState()
 // Keep this fallback after every API route so /api requests are never served
 // with the React entry page.
 if (fs.existsSync(clientDist)) {
-  app.get('/{*path}', (_, res) => res.sendFile(path.join(clientDist, 'index.html')));
+  app.get('/{*path}', (_, res) => res.sendFile(path.join(clientDist, 'index.html'), { headers: { 'Cache-Control': 'no-cache' } }));
 }
 const safe = (socket, event, fn) => socket.on(event, async (payload = {}, ack = () => {}) => {
   try {
