@@ -42,6 +42,13 @@ export function App() {
   const initialCode = new URLSearchParams(location.search).get('room')?.toUpperCase() || '';
   useEffect(() => { soundRef.current = soundOn; setSoundEnabled(soundOn); }, [soundOn]);
   useEffect(() => {
+    const resumeConnection = () => {
+      if (document.visibilityState === 'visible' && !socket.connected) socket.connect();
+    };
+    document.addEventListener('visibilitychange', resumeConnection);
+    return () => document.removeEventListener('visibilitychange', resumeConnection);
+  }, []);
+  useEffect(() => {
     const status = !state || state.status === 'LOBBY' ? 'LOBBY' : me.isSpectator ? 'SPECTATING' : 'PLAYING';
     reportPlatformActivity(status);
     const timer = window.setInterval(() => reportPlatformActivity(status, true), 45_000);
