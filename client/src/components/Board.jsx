@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { PathIcon } from './PathIcon.jsx';
 
 const distance = points => Math.hypot(points[0].x - points[1].x, points[0].y - points[1].y);
@@ -62,14 +62,29 @@ function canPreviewPlacement(cells, start, card, x, y, rotation) {
 
 export function Board({ state, selectedCard, rotation, onPlacePath, onRemovePath, onPeekGoal }) {
   const [view, setView] = useState({ x: 0, y: 0, z: 1 });
+  const [freshPathKeys, setFreshPathKeys] = useState(() => new Set());
   const drag = useRef(null);
   const pointers = useRef(new Map());
   const pinch = useRef(null);
+  const knownPathKeys = useRef(null);
   const cells = useMemo(() => new Map(state.game.board.map(cell => [`${cell.x},${cell.y}`, cell])), [state.game.board]);
   const xs = useMemo(() => Array.from({ length:state.game.boardBounds.maxX - state.game.boardBounds.minX + 1 }, (_, index) => state.game.boardBounds.minX + index), [state.game.boardBounds]);
   const ys = useMemo(() => Array.from({ length:state.game.boardBounds.maxY - state.game.boardBounds.minY + 1 }, (_, index) => state.game.boardBounds.minY + index), [state.game.boardBounds]);
   const mode = selectedCard?.type === 'PATH' ? 'PLACE' : selectedCard?.action;
   const start = useMemo(() => state.game.board.find(cell => cell.kind === 'START'), [state.game.board]);
+  useEffect(() => {
+    const currentPathKeys = new Set(state.game.board.filter(cell => cell.kind === 'PATH').map(cell => cellKey(cell.x, cell.y)));
+    if (knownPathKeys.current) {
+      const added = [...currentPathKeys].filter(key => !knownPathKeys.current.has(key));
+      if (added.length) {
+        setFreshPathKeys(new Set(added));
+        const timer = window.setTimeout(() => setFreshPathKeys(new Set()), 850);
+        knownPathKeys.current = currentPathKeys;
+        return () => window.clearTimeout(timer);
+      }
+    }
+    knownPathKeys.current = currentPathKeys;
+  }, [state.game.board]);
   const selectable = (cell, x, y) => (mode === 'PLACE' && canPreviewPlacement(cells, start, selectedCard, x, y, rotation)) || (mode === 'REMOVE_PATH' && cell?.kind === 'PATH') || (mode === 'PEEK_GOAL' && cell?.kind === 'GOAL' && !cell.revealed);
   const isPlacementPreview = (cell, x, y) => mode === 'PLACE' && canPreviewPlacement(cells, start, selectedCard, x, y, rotation);
   const placementCount = useMemo(() => mode === 'PLACE' ? ys.reduce((total, y) => total + xs.filter(x => isPlacementPreview(cells.get(cellKey(x, y)), x, y)).length, 0) : 0, [cells, mode, rotation, selectedCard, start, xs, ys]);
@@ -95,7 +110,8 @@ export function Board({ state, selectedCard, rotation, onPlacePath, onRemovePath
         const candidate = selectable(cell, x, y);
         const interactionClass = mode === 'PLACE' ? 'place' : mode === 'REMOVE_PATH' ? 'remove' : mode === 'PEEK_GOAL' ? 'peek' : '';
         const interactionLabel = mode === 'PLACE' ? '놓기' : mode === 'REMOVE_PATH' ? '제거' : mode === 'PEEK_GOAL' ? '확인' : '';
-        return <button key={`${x},${y}`} data-cell={`${x},${y}`} data-interaction-label={candidate ? interactionLabel : undefined} className={`board-cell ${cell ? 'occupied' : ''} ${cell?.kind === 'GOAL' && cell.revealed ? 'goal-revealed' : ''} ${candidate ? `candidate candidate-${interactionClass}` : ''}`} onPointerDown={event => event.stopPropagation()} onPointerUp={event => event.stopPropagation()} onClick={() => click(cell, x, y)} aria-label={`${x}, ${y} 칸`}>
+        const isFreshPath = cell?.kind === 'PATH' && freshPathKeys.has(cellKey(x, y));
+        return <button key={`${x},${y}`} data-cell={`${x},${y}`} data-interaction-label={candidate ? interactionLabel : undefined} className={`board-cell ${cell ? 'occupied' : ''} ${isFreshPath ? 'path-arrive' : ''} ${cell?.kind === 'GOAL' && cell.revealed ? 'goal-revealed' : ''} ${candidate ? `candidate candidate-${interactionClass}` : ''}`} onPointerDown={event => event.stopPropagation()} onPointerUp={event => event.stopPropagation()} onClick={() => click(cell, x, y)} aria-label={`${x}, ${y} 칸`}>
           {cell?.kind === 'START' && <><PathIcon connections={cell.connections} routes={cell.routes}/><span className="cell-label">출발</span></>}
           {cell?.kind === 'PATH' && <PathIcon connections={cell.connections} routes={cell.routes}/>}
           {cell?.kind === 'GOAL' && <PathIcon goal revealed={cell.revealed} treasure={cell.goalType === 'TREASURE'}/>}
