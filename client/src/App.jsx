@@ -10,13 +10,14 @@ const platformJoinToken = new URLSearchParams(location.search).get('joinToken');
 const platformHomeUrl = () => new URLSearchParams(location.search).get('platformUrl') || import.meta.env.VITE_PLATFORM_URL || document.referrer || '/';
 const platformActivityToken = new URLSearchParams(location.search).get('platformActivityToken');
 let lastPlatformActivity = '';
-const reportPlatformActivity = (status, force = false) => {
+  const reportPlatformActivity = (status, force = false) => {
   if (!platformActivityToken || (!force && lastPlatformActivity === status)) return;
   lastPlatformActivity = status;
   let endpoint;
   try { endpoint = new URL('/api/activity', platformHomeUrl()).toString(); } catch { return; }
-  fetch(endpoint, { method:'POST', headers:{'content-type':'application/json'}, body:JSON.stringify({ token:platformActivityToken, status }), keepalive:true }).catch(() => { lastPlatformActivity = ''; });
-};
+    fetch(endpoint, { method:'POST', headers:{'content-type':'application/json'}, body:JSON.stringify({ token:platformActivityToken, status }), keepalive:true }).catch(() => { lastPlatformActivity = ''; });
+  };
+  window.addEventListener('pagehide', () => reportPlatformActivity('OFFLINE', true));
 const cueFromLog = message => /배치/.test(message) ? 'place' : /고장|수리|제거/.test(message) ? 'action' : /공개/.test(message) ? 'reveal' : /승리/.test(message) ? 'victory' : null;
 const readSession = () => {
   try {
