@@ -12,6 +12,7 @@ import './mine-cards.css';
 import './action-cards.css';
 import './role-reveal.css';
 import './peek-reveal.css';
+import './pregame-guide.css';
 import './responsive.css';
 import './home.css';
 import './game-ux.css';
